@@ -3,35 +3,28 @@
 
 ; Part 1
 (defn calc-correct-passwords [input]
-  (let [counter (atom 0)]
-    (doall
-      (for [i input]
-        (let [words (str/split i #" ")]
-          (when (apply distinct? words)
-            (swap! counter inc)))))
-    
-    @counter))
-
-; testing
-;; (calc-correct-passwords ["aa bb cc dd ee"])
-;; (calc-correct-passwords ["aa bb cc dd aa"]) 
+  (loop [counter 0 n (count input)]
+    (if (= n 0)
+      counter
+      (let [words (str/split (input (dec n)) #" ")]
+        (recur
+          (if (apply distinct? words) (inc counter) counter)
+          (dec n))))))
 
 ; Part 2
-
-(defn sort-words [input]
+(defn- sort-words [input]
   (->> (str/split input #" ")
    (map sort)
    (map str/join)))
 
 (defn calc-correct-passwords-anagram [input]
-  (let [counter (atom 0)]
-    (doall
-      (for [w input]
-        (let [sorted-words (sort-words w)]
-          (when (apply distinct? sorted-words)
-            (swap! counter inc)))))
-    
-    @counter))
+  (loop [counter 0 n (count input)]
+    (if (= n 0)
+      counter
+      (let [sorted-words (-> (input (dec n)) sort-words)]
+        (recur
+          (if (apply distinct? sorted-words) (inc counter) counter)
+          (dec n))))))
 
 (calc-correct-passwords-anagram [
 "nyot babgr babgr kqtu kqtu kzshonp ylyk psqk"
