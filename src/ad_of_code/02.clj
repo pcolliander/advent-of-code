@@ -54,4 +54,4 @@
      [9 4 7 3 ]
      [3 8 6 5 ]]))
 
-(println (checks input))
+(println (sum-of-each-row input))
