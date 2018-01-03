@@ -1,6 +1,5 @@
 (ns ad-of-code.08
-  (:require [clojure.string :as str]
-            [clojure.java.io :as io]))
+  (:require [clojure.string :as str]))
 
 (defn- map-condition [condition]
   (case condition
@@ -14,8 +13,8 @@
 (defn- update-register [op amount register complete-register]
   (assoc complete-register register 
     (if (= op "inc")
-      (+ (or (get complete-register register) 0) amount )
-      (- (or (get complete-register register) 0) amount ))))
+      (+ (or (get complete-register register) 0) amount)
+      (- (or (get complete-register register) 0) amount))))
 
 (defn f [input-path]
   (let [file (slurp input-path)
