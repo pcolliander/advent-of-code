@@ -20,9 +20,11 @@
   (let [file (slurp input-path)
         instruction-lines (str/split-lines file)]
 
-    (loop [complete-register {} index 0]
+    (loop [complete-register {} index 0 current-highest-value 0]
       (if (== index (count instruction-lines))
-        (println (reduce max (vals complete-register)))
+        (do
+          (println "(part 1) result: " (reduce max (vals complete-register)))
+          (println "(part 2) highest-value: " current-highest-value))
         (let [string (get instruction-lines index)
               instruction (str/split string  #" ")
               register (nth instruction 0)
@@ -33,18 +35,13 @@
               second-operand (Integer/parseInt (nth instruction 6))]
 
             (if ((map-condition condition) (or (get complete-register register-in-condition) 0) second-operand)
-              (recur (update-register operator amount register complete-register) (inc index))
-              (recur complete-register (inc index))) )))))
+              (let [updated-register (update-register operator amount register complete-register)
+                    new-value (or (get updated-register register) 0)
+                    highest-value (if (> new-value current-highest-value) new-value current-highest-value)]
+
+                (recur (update-register operator amount register complete-register) (inc index) highest-value))
+              (recur complete-register (inc index) current-highest-value)))))))
 
 (f "./src/ad_of_code/08/puzzle-input.txt")
 (f "./src/ad_of_code/08/test-input.txt")
-
-
-
-;; (let [updated-register (update-register operator amount register complete-register)
-;;       new-value (get update-register register)
-;;       new-highest-value (if (< value highest-value) new-value highest-value)]
-
-
-
 
