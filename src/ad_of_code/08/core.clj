@@ -36,7 +36,7 @@
 
             (if ((map-condition condition) (or (get complete-register register-in-condition) 0) second-operand)
               (let [updated-register (update-register operator amount register complete-register)
-                    new-value (or (get updated-register register) 0)
+                    new-value (get updated-register register) 
                     highest-value (if (> new-value current-highest-value) new-value current-highest-value)]
 
                 (recur (update-register operator amount register complete-register) (inc index) highest-value))
