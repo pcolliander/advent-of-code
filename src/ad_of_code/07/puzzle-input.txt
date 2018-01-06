@@ -1,8 +1,3 @@
-(ns ad-of-code.07
-  (:require [clojure.string :as str]))
-
-
-(def input "
 navfz (187) -> jviwcde, wfwor, vpfabxa
 adtfnx (74)
 endsg (33)
@@ -794,7 +789,7 @@ kdrfg (85)
 sdcdu (9)
 tllopby (96)
 ghyax (30)
-newnawd (<t_co>) -> jmeken, hjcphe
+newnawd (256) -> jmeken, hjcphe
 ggqro (146) -> blwjcp, ynleow
 fhbbe (47) -> tdqaege, phkek
 kzbfyep (98)
@@ -971,7 +966,7 @@ lcidw (97) -> xbipb, wndcqx, ryluuhv
 kfrwimb (53)
 vkubjgp (80)
 zldlt (84)
-gpxam (<t_co>) -> krythkn, pnmirw
+gpxam (256) -> krythkn, pnmirw
 pzjusto (40)
 neixysk (68)
 gyftdi (78)
@@ -1871,34 +1866,3 @@ tulwp (264) -> dygbnr, wufaj, oxcetg, gbfjjv, xnfpxnd, oxvjudn, anongb
 lxuwkr (16)
 zczzj (89)
 xszevpx (8)
-")
-
-(defn- get-head [string]
-  (first (str/split string #" ")))
-
-(defn- get-links [string]
-  (str/split
-    (str/trim 
-      (str/replace 
-        (re-find #"->.*$" string)  "->" "") ) #", "))
-
-(defn- read-and-map-input [input]
-  (let [strings (str/split input #"\n")
-        string-with-links (filter #(> (.indexOf % ",") 0) strings)
-        top-programs (atom {})]
-                                   
-    (doall
-      (for [s string-with-links]
-        (swap! top-programs conj (hash-map (get-head s) (get-links s)))) )
-  
-    @top-programs))
-
-(defn find-topmost-program [input]
-  (let [top-programs (read-and-map-input input)]
-
-    (for [k (keys top-programs)]
-      (if (nil? (some #(when (= % k) %) (flatten (vals top-programs))))
-        (println "result is: " k)) )))
-
-(find-topmost-program input)
-
