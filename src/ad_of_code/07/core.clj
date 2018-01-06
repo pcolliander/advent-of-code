@@ -12,15 +12,13 @@
 
 (defn- map-input [input-lines]
   (let [string-with-links (filter #(> (.indexOf % ",") 0) input-lines)]
-    (loop [string-with-links string-with-links 
-           n (count string-with-links) 
+    (loop [n (count string-with-links)
            top-programs {}]
 
       (if (= n 0)
         top-programs
-        (recur 
-          string-with-links 
-          (dec n) 
+        (recur
+          (dec n)
           (conj top-programs (hash-map (get-head (nth string-with-links (dec n) )) (get-links (nth string-with-links (dec n) )))))))))
 
 (defn find-topmost-program [input-path]

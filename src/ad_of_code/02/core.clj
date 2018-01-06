@@ -3,7 +3,7 @@
 
 ; Part 1
 (defn- calc-difference [row]
-  (- (reduce max row ) (reduce min row )))
+  (- (reduce max row) (reduce min row)))
 
 (defn checksum-calc [input-path]
   (let [file (slurp input-path)]
