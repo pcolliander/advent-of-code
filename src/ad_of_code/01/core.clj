@@ -1,7 +1,7 @@
 (ns ad-of-code.01.core
   (:require [clojure.string :as str]))
 
-(defn- input-to-sequence-of-digits [input-string]
+(defn- input->sequence-of-digits [input-string]
   (let [sequence-of-strings (-> input-string (str/trim) (str/split #""))]
      (->> sequence-of-strings
        (map #(Integer/parseInt %)))))
@@ -9,7 +9,7 @@
 ; Part 1
 (defn get-sum-part-1 [input-path]
   (let [input-string (slurp input-path)
-        sequence-of-digits (input-to-sequence-of-digits input-string)
+        sequence-of-digits (input->sequence-of-digits input-string)
         first-value (first sequence-of-digits)
         last-value (last sequence-of-digits)
         initial-sum (if (= first-value last-value) last-value 0)]
@@ -26,7 +26,7 @@
 
 (defn get-sum-part-2 [input-path]
   (let [input-string (slurp input-path)
-        sequence-of-digits (input-to-sequence-of-digits input-string)
+        sequence-of-digits (input->sequence-of-digits input-string)
         length-of-list (count sequence-of-digits)
         steps-to-take (/ length-of-list 2)
         inital-value {:current-item 0, :total-sum 0, :input-sequence sequence-of-digits}]
