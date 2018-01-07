@@ -6,13 +6,15 @@
   (let [file (slurp input-path)
         input-lines (str/split-lines file)]
 
-  (loop [counter 0 n (count input-lines)]
-    (if (= n 0)
-      counter
-      (let [words (str/split (input-lines (dec n)) #" ")]
+  (loop [counter 0
+         input-lines input-lines]
+
+    (if-let [line (first input-lines)]
+      (let [words (str/split line #" ")]
         (recur
           (if (apply distinct? words) (inc counter) counter)
-          (dec n)))))))
+          (rest input-lines)))
+      counter))))
 
 (calc-correct-passwords "./src/ad_of_code/04/puzzle-input.txt")
 
@@ -26,13 +28,15 @@
   (let [file (slurp input-path)
         input-lines (str/split-lines file)]
 
-  (loop [counter 0 n (count input-lines)]
-    (if (= n 0)
-      counter
-      (let [sorted-words (-> (input-lines (dec n)) sort-words)]
+  (loop [counter 0
+         input-lines input-lines]
+
+    (if-let [line (first input-lines)]
+      (let [sorted-words (sort-words line)]
         (recur
           (if (apply distinct? sorted-words) (inc counter) counter)
-          (dec n)))))))
+          (rest input-lines)))
+      counter))))
 
 (calc-correct-passwords-anagram "./src/ad_of_code/04/puzzle-input.txt")
 
