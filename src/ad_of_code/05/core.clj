@@ -15,8 +15,8 @@
           (recur (inc steps) new-index (update array current-index inc))
           steps)))))
 
-(calc-steps-to-exit "./src/ad_of_code/05/test-input.txt")
-(calc-steps-to-exit "./src/ad_of_code/05/puzzle-input.txt")
+(calc-steps-to-exit "./src/ad_of_code/05/test-input.txt") ;5
+;; (calc-steps-to-exit "./src/ad_of_code/05/puzzle-input.txt")
 
 ; Part 2
 (defn calc-steps-to-exit-part-2 [input-path] 
@@ -38,4 +38,4 @@
           steps)))))
 
 (calc-steps-to-exit-part-2 "./src/ad_of_code/05/test-input.txt")
-(calc-steps-to-exit-part-2 "./src/ad_of_code/05/puzzle-input.txt")
+;; (calc-steps-to-exit-part-2 "./src/ad_of_code/05/puzzle-input.txt")
