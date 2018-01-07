@@ -1,4 +1,4 @@
-(ns ad-of-code.03)
+(ns ad-of-code.03.core)
 
 ; this creates a sequence like 4321012343210 (if 4 is the number of grids away from the most-inner grid).
 ; used to get the offset from the middle number.
