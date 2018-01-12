@@ -53,28 +53,29 @@
         (rest input-lines)) )
       programs-by-weight )))
 
-(defn- get-weight-of-program-and-its-children [program total-weight programs-with-links weight-by-program] 
-  (println "program " program)
-  (println "total-weight " total-weight)
-  (println "get programs-with-links program " (get programs-with-links program))
-  (println "get weight-by-program program" (get weight-by-program program))
+;; (defn- get-weight-of-links [program total-weight programs-with-links weight-by-program] 
+;;   (if-let [links-of-program (get programs-with-links program)]
+;;     (loop [links-of-program links-of-program
+;;            total-weight total-weight]
+;;       (if-let [link (first links-of-program)]
+;;         (let [weight (get-weight-of-links link total-weight programs-with-links weight-by-program)]
+;;           (recur 
+;;             (rest links-of-program)
+;;             (+' total-weight weight)))
+;;         total-weight))
+;;     (get weight-by-program program)))
 
-  (if-let [links-of-program (get programs-with-links program)]
-    (loop [links-of-program links-of-program
-           total-weight total-weight]
+(defn- get-weight-of-links [program total-weight programs-with-links weight-by-program] 
+  (loop [links-of-program (get programs-with-links program)
+         total-weight total-weight]
 
-      (if-let [link (first links-of-program)]
-        (let [weight (get-weight-of-program-and-its-children link total-weight programs-with-links weight-by-program)
-              weight2 (+ weight (get weight-by-program link)) ]
-
-          (println "weight here" weight)
-          (println "(+ total-weight weight)" (+ total-weight weight2))
-          (recur 
-            (rest links-of-program)
-            (+ total-weight weight2)))))
-
-
-      (get weight-by-program program)))  ; if no links, just take the weight of the program.
+    (if-let [link (first links-of-program)]
+      (if-let [links (get programs-with-links link)]
+        (recur links total-weight)
+        (recur 
+          (rest links-of-program)
+          (+ total-weight (get weight-by-program link))))
+    total-weight)))
 
 (defn find-weight [input-path]
   (let [file (slurp input-path)
@@ -85,25 +86,13 @@
         links-of-the-top-program (get programs-with-links top-program) ]
 
     (println "links-of-the-top-program " links-of-the-top-program )
-
     (println "top-program " top-program)
-             
+
     (println " result " (->> links-of-the-top-program
       (map (fn [program] 
-      (get-weight-of-program-and-its-children program 0 programs-with-links weight-by-program)) )
-      (doall)
-      
-      ))))
+        (+ (get weight-by-program program) (get-weight-of-links program 0 programs-with-links weight-by-program)) ))
+      (doall)))))
 
-
-    ;; (loop [top-programs-keys (keys programs-with-links)]
-    ;;   (if-let [program (first top-programs-keys)]
-    ;;     (let [links-of-program (get programs-with-links program)
-    ;;           has-uneven-link? (compare-weight-of-links program links-of-program weight-by-program programs-with-links) ]
-    ;;
-    ;;       (if has-uneven-link?
-    ;;         (println "result is one of the children for" program) ; (reduce - [weight weight2])
-    ;;         (recur (rest top-programs-keys))) )))))
-
-(find-weight "./src/ad_of_code/07/puzzle-input.txt")
+;; (find-weight "./src/ad_of_code/07/puzzle-input.txt")
+(find-weight "./src/ad_of_code/07/test-input.txt")
 
