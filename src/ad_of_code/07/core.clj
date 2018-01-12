@@ -65,17 +65,48 @@
 ;;         total-weight))
 ;;     (get weight-by-program program)))
 
-(defn- get-weight-of-links [program total-weight programs-with-links weight-by-program] 
-  (loop [links-of-program (get programs-with-links program)
-         total-weight total-weight]
+;; (defn- get-weight-of-links [program total-weight programs-with-links weight-by-program] 
+;;   (loop [links-of-program (get programs-with-links program)
+;;          total-weight total-weight]
+;;
+;;     (if-let [link (first links-of-program)]
+;;       (if-let [links (get programs-with-links link)]
+;;         (recur links total-weight)
+;;         (recur 
+;;           (rest links-of-program)
+;;           (+ total-weight (get weight-by-program link))))
+;;     total-weight)))
 
-    (if-let [link (first links-of-program)]
+;; (def my-stack (atom '()))
+;;
+;; (defn push* [item stack]
+;;   (swap! stack conj item))
+;;
+;; (defn top* [stack]
+;;   (first @stack))
+;;
+;; (defn pop* [stack]
+;;   (let [item (top* stack)]
+;;     (reset! stack (rest @stack))
+;;     item))
+;;
+;; (defn empty*? [stack]
+;;   (= 0 (count @stack)))
+
+
+(defn f [links]
+  (let [stack links]
+
+    (loop [stack links] 
+      (if (not= 0 (count stack))
+
+    (if-let [link (first links)]
       (if-let [links (get programs-with-links link)]
-        (recur links total-weight)
-        (recur 
-          (rest links-of-program)
-          (+ total-weight (get weight-by-program link))))
-    total-weight)))
+
+
+
+
+
 
 (defn find-weight [input-path]
   (let [file (slurp input-path)
@@ -85,13 +116,17 @@
         top-program (find-topmost-program  input-path)
         links-of-the-top-program (get programs-with-links top-program) ]
 
-    (println "links-of-the-top-program " links-of-the-top-program )
-    (println "top-program " top-program)
+    (f links)))
 
-    (println " result " (->> links-of-the-top-program
-      (map (fn [program] 
-        (+ (get weight-by-program program) (get-weight-of-links program 0 programs-with-links weight-by-program)) ))
-      (doall)))))
+
+    ; OLD Recursive Method
+    ;; (println "links-of-the-top-program " links-of-the-top-program )
+    ;; (println "top-program " top-program)
+    ;;
+    ;; (println " result " (->> links-of-the-top-program
+    ;;   (map (fn [program] 
+    ;;     (+ (get weight-by-program program) (get-weight-of-links program 0 programs-with-links weight-by-program)) ))
+    ;;   (doall)))))
 
 ;; (find-weight "./src/ad_of_code/07/puzzle-input.txt")
 (find-weight "./src/ad_of_code/07/test-input.txt")
