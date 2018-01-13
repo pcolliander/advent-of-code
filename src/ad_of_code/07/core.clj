@@ -29,7 +29,7 @@
       (if-let [program-key (first top-programs-keys)]
         (if (nil? (some #(when (= % program-key) %) (flatten (vals top-programs))))
           (do
-            (println "result is " program-key)
+            ;; (println "result is " program-key)
             program-key)
           (recur (rest top-programs-keys)) )))))
 
@@ -53,81 +53,41 @@
         (rest input-lines)) )
       programs-by-weight )))
 
-;; (defn- get-weight-of-links [program total-weight programs-with-links weight-by-program] 
-;;   (if-let [links-of-program (get programs-with-links program)]
-;;     (loop [links-of-program links-of-program
-;;            total-weight total-weight]
-;;       (if-let [link (first links-of-program)]
-;;         (let [weight (get-weight-of-links link total-weight programs-with-links weight-by-program)]
-;;           (recur 
-;;             (rest links-of-program)
-;;             (+' total-weight weight)))
-;;         total-weight))
-;;     (get weight-by-program program)))
+(defn f [program weight-by-program programs-with-links]
+  (loop [stack (into '() (get programs-with-links program) )
+         total-weight (get weight-by-program program)] 
 
-;; (defn- get-weight-of-links [program total-weight programs-with-links weight-by-program] 
-;;   (loop [links-of-program (get programs-with-links program)
-;;          total-weight total-weight]
-;;
-;;     (if-let [link (first links-of-program)]
-;;       (if-let [links (get programs-with-links link)]
-;;         (recur links total-weight)
-;;         (recur 
-;;           (rest links-of-program)
-;;           (+ total-weight (get weight-by-program link))))
-;;     total-weight)))
+    (if (not= 0 (count stack))
+      (let [link (first stack)]
+        (if-let [links (get programs-with-links link)]
+          (recur 
+            (concat (rest stack) links)
+            (+ total-weight (get weight-by-program link)))
+          (recur 
+            (rest stack)
+            (+ total-weight (get weight-by-program link)))))
 
-;; (def my-stack (atom '()))
-;;
-;; (defn push* [item stack]
-;;   (swap! stack conj item))
-;;
-;; (defn top* [stack]
-;;   (first @stack))
-;;
-;; (defn pop* [stack]
-;;   (let [item (top* stack)]
-;;     (reset! stack (rest @stack))
-;;     item))
-;;
-;; (defn empty*? [stack]
-;;   (= 0 (count @stack)))
-
-
-(defn f [links]
-  (let [stack links]
-
-    (loop [stack links] 
-      (if (not= 0 (count stack))
-
-    (if-let [link (first links)]
-      (if-let [links (get programs-with-links link)]
-
-
-
-
-
+      total-weight)))
 
 (defn find-weight [input-path]
   (let [file (slurp input-path)
         input-lines (str/split-lines file)
         programs-with-links (get-programs-with-links input-lines)
         weight-by-program (get-weight-by-program input-lines)
-        top-program (find-topmost-program  input-path)
+        top-program (find-topmost-program input-path)
         links-of-the-top-program (get programs-with-links top-program) ]
 
-    (f links)))
 
+    ; replace the link and keep following the links down to see where the link has the wrong weight.
+    (doall
+      (for [l links-of-the-top-program]
+      ;; (for [l (get programs-with-links "tulwp")] ;; xnmjpa ;; vfjnsd ;; tulwp
+        (do 
+          (println)
+          (println "result for:" l)
+          (println (f l weight-by-program programs-with-links)))))))
 
-    ; OLD Recursive Method
-    ;; (println "links-of-the-top-program " links-of-the-top-program )
-    ;; (println "top-program " top-program)
-    ;;
-    ;; (println " result " (->> links-of-the-top-program
-    ;;   (map (fn [program] 
-    ;;     (+ (get weight-by-program program) (get-weight-of-links program 0 programs-with-links weight-by-program)) ))
-    ;;   (doall)))))
+(find-weight "./src/ad_of_code/07/puzzle-input.txt") ; tulwp should be (264 - 8) = 256
+;; (find-weight "./src/ad_of_code/07/test-input.txt")
 
-;; (find-weight "./src/ad_of_code/07/puzzle-input.txt")
-(find-weight "./src/ad_of_code/07/test-input.txt")
 
