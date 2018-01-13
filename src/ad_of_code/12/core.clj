@@ -49,6 +49,7 @@
           (println "counter" counter)
           counter )))))
 
+; Part 2
 (defn- dfs [program graph]
   (loop [stack (into '() (get graph program))
          seen-nodes #{}]
@@ -63,7 +64,6 @@
             (conj seen-nodes next-node)))
           seen-nodes)))
 
-; Part 2
 (defn how-many-groups [input-path]
   (let [input (slurp input-path)
         graph (build-graph input) ]
