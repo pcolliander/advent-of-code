@@ -53,7 +53,7 @@
         (rest input-lines)) )
       programs-by-weight )))
 
-(defn f [program weight-by-program programs-with-links]
+(defn get-total-weight-of-program [program weight-by-program programs-with-links]
   (loop [stack (into '() (get programs-with-links program) )
          total-weight (get weight-by-program program)] 
 
@@ -67,27 +67,28 @@
             (rest stack)
             (+ total-weight (get weight-by-program link)))))
 
-      total-weight)))
+      {:program program :weight total-weight})))
 
 (defn find-weight [input-path]
   (let [file (slurp input-path)
         input-lines (str/split-lines file)
         programs-with-links (get-programs-with-links input-lines)
         weight-by-program (get-weight-by-program input-lines)
-        top-program (find-topmost-program input-path)
-        links-of-the-top-program (get programs-with-links top-program) ]
+        top-program (find-topmost-program input-path)]
 
+    (loop [program top-program]
+      (let [links (get programs-with-links program)
+            uneven-link (->> links
+              (map #(get-total-weight-of-program % weight-by-program programs-with-links))
+              (group-by :weight)
+              (filter #(= 1 (count (second %))))
+              (flatten))]
 
-    ; replace the link and keep following the links down to see where the link has the wrong weight.
-    (doall
-      (for [l links-of-the-top-program]
-      ;; (for [l (get programs-with-links "tulwp")] ;; xnmjpa ;; vfjnsd ;; tulwp
-        (do 
-          (println)
-          (println "result for:" l)
-          (println (f l weight-by-program programs-with-links)))))))
+        (if (empty? uneven-link)
+          (println "the unbalanced program is" program)
+          (recur
+            (:program (second uneven-link)))) ))))
 
-(find-weight "./src/ad_of_code/07/puzzle-input.txt") ; tulwp should be (264 - 8) = 256
+(find-weight "./src/ad_of_code/07/puzzle-input.txt")
 ;; (find-weight "./src/ad_of_code/07/test-input.txt")
-
 
