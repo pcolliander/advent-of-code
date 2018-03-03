@@ -44,3 +44,18 @@
 
 (get-sum-part-2 "./src/ad_of_code/01/puzzle-input.txt")
 
+
+
+
+
+(:result (second (first {'notes/create {:result {:notes {:db/id 3, :content nil}}}})))
+
+
+
+
+
+
+
+
+
+

@@ -5,8 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojure "1.9.0-alpha16"]
-                 ]
+                 [org.clojure/clojure "1.9.0-alpha16"]]
    :profiles {:dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
  
    :main ^:skip-aot spec-testing.core
