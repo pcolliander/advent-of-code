@@ -9,15 +9,14 @@
 
 (defn- create-range-by-layer [lines]
   (loop [range-by-layer {} 
-         lines lines
-         items-count 0]
+         lines lines]
+
     (if-let [line (first lines)]
       (let [layer (Integer/parseInt (subs line 0 (.indexOf line ":")))
             layer-range (Integer/parseInt (str/trim (subs line (inc (.indexOf line ":")))))]
           (recur 
             (assoc range-by-layer layer layer-range)
-            (rest lines)
-            (inc items-count)))
+            (rest lines)))
 
       range-by-layer)))
 
