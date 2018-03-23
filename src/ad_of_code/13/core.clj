@@ -21,11 +21,6 @@
 
       range-by-layer)))
 
-(get {0 3, 1 2, 4 4, 6 4} 0)
-
-(reduce max '(0 1 4 5))
-
-
 (defn f [input-path]
   (let [input (slurp input-path)
         range-by-layer (create-range-by-layer (str/split-lines input))
@@ -38,13 +33,13 @@
 
       (if-let [layer (first layers)]
         (let [layer-range (get range-by-layer layer )
-              caught? (and layer-range (scanner-in-top-of-layer? layer-range picosecond))] ; and to remove nil (no range)
+              caught? (and layer-range (scanner-in-top-of-layer? layer-range picosecond))]
 
           (recur
             (inc picosecond)
             (rest layers)
             (if caught? 
-              (+ severity (* layer-range layer))  ; range and layer are the same?
+              (+ severity (* layer-range layer))
               severity)))
         
         (do
