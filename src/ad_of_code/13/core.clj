@@ -2,19 +2,22 @@
   (:require [clojure.string :as str]))
 
 (defn- scanner-in-top-of-layer? [layer-range picosecond]
-  (let [scanned-layers (cycle (concat (range 1 (inc layer-range)) (reverse (range 2 layer-range))))
+  (let [scanned-layers (cycle
+                         (concat
+                           (range 1 (inc layer-range))
+                           (reverse (range 2 layer-range))))
         current-position (nth scanned-layers picosecond)]
 
     (= current-position 1)))
 
 (defn- create-range-by-layer [lines]
-  (loop [range-by-layer {} 
+  (loop [range-by-layer {}
          lines lines]
 
     (if-let [line (first lines)]
       (let [layer (Integer/parseInt (subs line 0 (.indexOf line ":")))
             layer-range (Integer/parseInt (str/trim (subs line (inc (.indexOf line ":")))))]
-          (recur 
+          (recur
             (assoc range-by-layer layer layer-range)
             (rest lines)))
 
@@ -23,7 +26,6 @@
 (defn f [input-path]
   (let [input (slurp input-path)
         range-by-layer (create-range-by-layer (str/split-lines input))
-        items-count (count range-by-layer)
         layers (range 0 (inc (reduce max (keys range-by-layer))))]
 
     (loop [picosecond 0
@@ -37,10 +39,10 @@
           (recur
             (inc picosecond)
             (rest layers)
-            (if caught? 
+            (if caught?
               (+ severity (* layer-range layer))
               severity)))
-        
+
         (do
           (println "severity is: " severity)
           severity)))))
