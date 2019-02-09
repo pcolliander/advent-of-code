@@ -6,15 +6,15 @@
   (->> (s/split-lines (slurp input-path))))
 
 (defn part-one [input-path]
-	(let [{:keys [twos threes]} (->> (read-input input-path)
-																	 (map #(frequencies (s/split % #"")))
-																	 (map vals)
-																	 (reduce (fn [prev n]
-																						 (let [x (set n)]
-																							 (-> prev
-																									 (update :twos (if (contains? x 2) (fnil inc 0) identity))
-																									 (update :threes (if (contains? x 3) (fnil inc 0) identity))))) {}))] 
-		(* twos threes)))
+  (let [{:keys [twos threes]} (->> (read-input input-path)
+                               (map #(frequencies (s/split % #"")))
+                               (map vals)
+                               (reduce (fn [prev n]
+                                         (let [x (set n)]
+                                           (-> prev
+                                               (update :twos (if (contains? x 2) (fnil inc 0) identity))
+                                               (update :threes (if (contains? x 3) (fnil inc 0) identity))))) {}))] 
+  (* twos threes)))
 
 (part-one "./src/two/test-input.txt")
 (part-one "./src/two/input.txt")
