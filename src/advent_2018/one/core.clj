@@ -1,4 +1,4 @@
-(ns one.core
+(ns advent_2018.one.core
   (:require [clojure.edn :as edn]
             [clojure.string :as s]))
 
@@ -10,8 +10,8 @@
   (->> (read-input input-path)
        (reduce +)))
 
-(part-one "./src/one/test-input.txt")
-(part-one "./src/one/input.txt")
+;; (part-one "./src/one/test-input.txt")
+(part-one "./src/advent_2018/one/input2.txt")
 
 (defn part-two
   ([input-path]
@@ -27,6 +27,6 @@
            (conj seen new-freq)
            new-freq))) )))
 
-(part-two "./src/one/test-input.txt")
-(part-two "./src/one/input.txt")
+;; (part-two "./src/one/test-input.txt")
+(part-two "./src/advent_2018/one/input2.txt")
 
