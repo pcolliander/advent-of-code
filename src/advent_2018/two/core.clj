@@ -19,31 +19,26 @@
 ;; (part-one "./src/advent_2018/two/test-input.txt")
 (part-one "./src/advent_2018/two/input.txt")
 
-(defn- get-value-with-diff-one [head right]
-  (let [diff-by-one? (= 1 (count (filter false? (map = head right))))]
-    (if diff-by-one?
-      right)))
-
-(defn- get-char-to-remove-from-head [left right]
-  (let [comparisons (map (fn [l r]
-                           (if (not= l r) (str l)))
-                         left right)]
-
-  (->> comparisons
-    (some #(when (not (nil? %)) %)))
+(defn- get-differing-chars [left right]
+  (->> (map vector left right)
+    (filter (partial apply not=))))
 
 (defn part-two [input-path]
   (loop [values (read-input input-path)]
     (if-let [[head & tail] values]
       (let [result (->> tail
-                    (map (partial get-value-with-diff-one head))
-                    (some #(when (not (nil? %)) %)))]
+                     (reduce (fn [prev n]
+                               (let [differing-chars (get-differing-chars head n)]
+                                 (if (= 1 (count differing-chars))
+                                   {:differing-char (ffirst differing-chars)}
+                                   prev)))))]
 
-        (if-not (nil? result)
-          (let [char-to-remove (get-char-to-remove-from-head head result)]
-            (s/replace-first head (re-pattern char-to-remove) ""))
+        (if-not (nil? (:differing-char result))
+          (s/replace-first head (re-pattern (str (:differing-char result))) "")
           (recur tail))))))
 
 (part-two "./src/advent_2018/two/test-input2.txt")
 (part-two "./src/advent_2018/two/input.txt")
+
+; mxhwoglxgeauywfkztndcvjqr
 
