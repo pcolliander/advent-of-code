@@ -7,8 +7,7 @@
        (map edn/read-string)))
 
 (defn part-one [input-path]
-  (->> (read-input input-path)
-       (reduce +)))
+  (reduce + (read-input input-path)))
 
 ;; (part-one "./src/one/test-input.txt")
 (part-one "./src/advent_2018/one/input2.txt")
@@ -18,14 +17,14 @@
    (part-two (take 150000 (cycle (read-input input-path))) #{} 0))
 
   ([values seen current-freq]
-   (if-let [head (first values)]
+   (if-let [[head & tail] values]
      (let [new-freq (+ head current-freq)]
        (if (contains? seen new-freq)
          new-freq
          (recur
-           (rest values)
+           tail
            (conj seen new-freq)
-           new-freq))) )))
+           new-freq))))))
 
 ;; (part-two "./src/one/test-input.txt")
 (part-two "./src/advent_2018/one/input2.txt")
