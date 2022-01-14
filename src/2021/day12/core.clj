@@ -67,7 +67,7 @@
       [last-node neighbour])))
 
 (defn part-one
-  ([] (part-one (slurp "./twelve/input.txt")))
+  ([] (part-one (slurp "./src/2021/day12/input.txt")))
   ([input]
    (let [graph (parse input)]
      (loop [paths [[:start]]
@@ -97,7 +97,7 @@
       [last-node neighbour])))
 
 (defn part-two
-  ([] (part-two (slurp "./twelve/input.txt")))
+  ([] (part-two (slurp "./src/2021/day12/input.txt")))
   ([input]
    (let [graph (parse input)]
      (loop [paths [[:start]]
@@ -112,8 +112,6 @@
          (if (seq new-branches)
            (recur (remove all-completed-paths new-branches) all-completed-paths)
            (count completed-paths)))))))
-
-
 
 (comment
 (parse example)

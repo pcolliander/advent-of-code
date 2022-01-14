@@ -2,8 +2,21 @@
   (:require [clojure.edn :as edn]
              [clojure.string :as string]))
 
+(def example "00100
+             11110
+             10110
+             10111
+             10101
+             01111
+             00111
+             11100
+             10000
+             11001
+             00010
+             01010"
+
 (defn- read-input [input-path]
-  (let [input (slurp (or input-path "./three/test-input.txt"))]
+  (let [input (slurp input-path)]
     (->> (string/split-lines input))))
 
 (defn- bit->decimal [bit]
@@ -88,17 +101,3 @@
 (comment
   (part-one "./three/input.txt")
   (part-two nil #_"./three/input.txt"))
-
-(def data
-  ["00102"
-   "11110"
-   "10110"
-   "10111"
-   "10101"
-   "01111"
-   "00111"
-   "11100"
-   "10000"
-   "11001"
-   "00010"
-   "01010"])

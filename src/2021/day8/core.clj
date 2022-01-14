@@ -5,7 +5,6 @@
 
 (def example "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf")
 
-
 (defn- parse [input-path]
   (->> (string/split (slurp input-path) #",")
        (map string/trim)
@@ -13,7 +12,7 @@
 
 
 (defn part-one
-  ([] (part-one "./seven/test-input.txt"))
+  ([] (part-one (slurp "./src/2021/day8/input.txt")))
   ([input-path]
    (let [positions (parse input-path)
          costs (for [align-to (range (apply min positions) (inc (apply max positions)))]
@@ -21,7 +20,6 @@
 
      (apply min costs))))
 
-
 (comment
-(part-one  "./seven/input.txt")
-(part-two  "./seven/input.txt"))
+(part-one example)
+(part-one))

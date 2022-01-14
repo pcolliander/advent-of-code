@@ -67,7 +67,7 @@
        (filter some?))) 
 
 (defn part-one
-  ([] (part-one (slurp "./nine/input.txt")))
+  ([] (part-one (slurp "./src/2021/day9/input.txt")))
   ([input]
    (let [heightmap (parse input)
          columns (transpose heightmap)]
@@ -75,35 +75,23 @@
           (reduce (fn [acc n]
                     (+ acc (+ 1 n))) 0)))))
 
-
-; PART 2
 (defn part-two
-  ([] (part-two (slurp "./nine/input.txt")))
+  ([] (part-two (slurp "./src/2021/day9/input.txt")))
   ([input]
    (let [heightmap (parse input)
          columns (transpose heightmap)]
 
      (->> (for [y (range (count heightmap))
                 :let [row (nth heightmap y)]]
-
             (for [x (range 0 (count row))
                   :let [point (nth row x)
                         column (nth columns x)
                         [left right] (get-left-right row x)
                         [up down] (get-left-right column y)]]
-              (println :low-point? point (low-points {:point point :left left :down down :right right :up up}))
-
-              {:point point :left left :down down :right right :up up})))
-
-
-     )))
-
-
-
+              {:point point :left left :down down :right right :up up}))))))
 
 (comment
 (part-one example)
 (part-one)
 (part-two example)
 (part-two))
-

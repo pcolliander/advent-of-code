@@ -5,8 +5,8 @@
 
 (def example "16,1,2,0,4,2,7,1,2,14")
 
-(defn- parse [input-path]
-  (->> (string/split (slurp input-path) #",")
+(defn- parse [input]
+  (->> (string/split input #",")
        (map string/trim)
        (map #(Integer/parseInt %))))
 
@@ -16,7 +16,7 @@
       (reduce +)))
 
 (defn part-one
-  ([] (part-one "./seven/test-input.txt"))
+  ([] (part-one (slurp "./src/2021/day7/input.txt")))
   ([input-path]
    (let [positions (parse input-path)
          costs (for [align-to (range (apply min positions) (inc (apply max positions)))]
@@ -38,13 +38,15 @@
        (reduce +)))
 
 (defn part-two
-  ([] (part-two "./seven/test-input.txt"))
-  ([input-path]
-   (let [positions (parse input-path)
+  ([] (part-two (slurp "./src/2021/day7/input.txt")))
+  ([input]
+   (let [positions (parse input)
          costs (for [align-to (range (apply min positions) (inc (apply max positions)))]
                  (incremental-cost positions align-to))]
      (apply min costs))))
 
 (comment
-(part-one  "./seven/input.txt")
-(part-two  "./seven/input.txt"))
+(part-one example)
+(part-one)
+(part-two example)
+(part-two))

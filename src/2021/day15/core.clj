@@ -28,7 +28,7 @@
               (map #(Integer/parseInt (str %)) line)))))
 
 (defn part-one
-  ([] (part-one (slurp "./fifteen/input.txt")))
+  ([] (part-one (slurp "./src/2021/day15/input.txt")))
   ([input]
    (let [x (parse input)]
      )))

@@ -85,13 +85,13 @@
        :total-flashes (+ (count flashed) total-flashes)})))
 
 (defn part-one
-  ([] (part-one (slurp "./eleven/input.txt")))
+  ([] (part-one (slurp "./src/2021/day11/input.txt")))
   ([input]
    (let [octopuses (parse input)]
      (nth (iterate step {:octopuses octopuses}) 100))))
 
 (defn part-two
-  ([] (part-two (slurp "./eleven/input.txt")))
+  ([] (part-two (slurp "./src/2021/day11/input.txt")))
   ([input]
    (let [octopuses (parse input)]
      (loop [n 0]
@@ -111,4 +111,3 @@
   (part-one)
   (part-two example)
   (part-two))
-

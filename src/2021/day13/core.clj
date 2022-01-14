@@ -70,7 +70,7 @@
       (set paper))))
 
 (defn part-one
-  ([] (part-one (slurp "./thirteen/input.txt")))
+  ([] (part-one (slurp "./src/2021/day13/input.txt")))
   ([input]
    (let [{:keys [paper fold-instructions]} (parse input)
          first-instruction (first fold-instructions)
@@ -87,34 +87,15 @@
            (print "░")))
        (println))))
 
-(defn- ugly-print [folded-paper]
-  (let [max-x (->> folded-paper (map first) (apply max))
-        max-y (->> folded-paper (map second) (apply max))
-        code (for [y (range 0 (inc max-y))]
-                (println (for [x (range 0 (inc max-x))]
-                  (if (folded-paper [x y])
-                    (print "█")
-                    (print "░")))))]
-    (pp/pprint code)))
-
 (defn part-two
-  ([] (part-two (slurp "./thirteen/input.txt")))
+  ([] (part-two (slurp "./src/2021/day13/input.txt")))
   ([input]
    (let [{:keys [paper fold-instructions]} (parse input)
          folded-paper (fold-paper fold-instructions paper)]
-
-     #_(ugly-print folded-paper) 
      (print-code folded-paper))))
 
 (comment
-(parse example)
-(parse (slurp "./thirteen/input.txt"))
-
-
 (part-one example)
 (part-one)
-
 (part-two example)
 (part-two))
-
-

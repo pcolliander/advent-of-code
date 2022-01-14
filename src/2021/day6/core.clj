@@ -5,19 +5,11 @@
 
 (def example "3,4,3,1,2")
 
-(defn- parse [input-path]
-   (let [fish (->> (string/split (slurp input-path) #",")
+(defn- parse [input]
+   (let [fish (->> (string/split input #",")
                    (map string/trim)
                    (map #(Integer/parseInt %)))]
-
      fish))
-
-;; (defn- progress [fish]
-;;   (concat
-;;     (map #(if (zero? %) 6 (dec %)) fish)
-;;     (repeat (count (filter zero? fish)) 8)))
-
-;; (nth (iterate progress (parse "./six/test-input.txt")) 18)
 
 (defn progress [lanterns]
   (->> lanterns
@@ -52,9 +44,9 @@
            input))
 
 (defn part-two
-  ([] (part-two "./six/test-input.txt"))
-  ([input-path]
-   (let [lanterns (parse input-path)]
+  ([] (part-two (slurp "./six/test-input.txt")))
+  ([input]
+   (let [lanterns (parse input)]
      (loop [day 0 lanterns (frequencies lanterns)]
        (println :day day)
        (if (>= day 256)
@@ -62,5 +54,5 @@
          (recur (inc day) (progress' lanterns)))))))
 
 (comment
-(part-one  #_"./six/input.txt")
-(part-two  #_"./six/input.txt"))
+(part-one example)
+(part-two example))

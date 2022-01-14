@@ -49,7 +49,7 @@
         0)))
 
 (defn part-one
-  ([] (part-one (slurp "./ten/input.txt")))
+  ([] (part-one (slurp "./src/2021/day10/input.txt")))
   ([input]
    (let [subsystem (parse input)]
      (->> subsystem
@@ -85,7 +85,7 @@
            \> 4)) line))
 
 (defn part-two
-  ([] (part-two (slurp "./ten/input.txt")))
+  ([] (part-two (slurp "./src/2021/day10/input.txt")))
   ([input]
    (let [subsystem (parse input)]
      (->> subsystem

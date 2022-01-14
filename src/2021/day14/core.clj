@@ -44,7 +44,7 @@
 
 
 (defn part-one
-  ([] (part-one (slurp "./fourteen/input.txt")))
+  ([] (part-one (slurp "./src/2021/day14/input.txt")))
   ([input]
    (let [{:keys [template insertion-rules]} (parse input)
          polymer (nth (iterate (partial compute-pairs insertion-rules) template) 10)]
@@ -66,7 +66,7 @@
      frequencies-polymer-template))
 
 (defn part-two
-   ([] (part-two (slurp "./fourteen/input.txt")))
+   ([] (part-two (slurp "./src/2021/day14/input.txt")))
   ([input]
    (let [{:keys [template insertion-rules]} (parse input)
          last-letter (last template)

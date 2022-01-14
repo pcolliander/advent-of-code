@@ -41,7 +41,7 @@
     [x y]))
 
 (defn part-one
-    ([] (part-one (slurp "./nine/input.txt")))
+    ([] (part-one (slurp "./src/2021/day9/input.txt")))
     ([input]
      (let [heightmap (parse input)]
        (->> (minimum heightmap)
@@ -72,7 +72,7 @@
         (count basin)))))
 
 (defn part-two
-  ([] (part-two (slurp "./nine/input.txt")))
+  ([] (part-two (slurp "./src/2021/day9/input.txt")))
   ([input]
    (let [heightmap (parse input)]
      (->> (minimum heightmap)
