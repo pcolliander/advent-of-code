@@ -21,7 +21,7 @@
                 lantern)))))
 
 (defn part-one
-  ([] (part-one "./six/test-input.txt"))
+  ([] (part-one (slurp "./src/2021/day6/input.txt")))
   ([input-path]
    (let [lanterns (parse input-path)]
 
@@ -44,15 +44,16 @@
            input))
 
 (defn part-two
-  ([] (part-two (slurp "./six/test-input.txt")))
+  ([] (part-two (slurp "./src/2021/day6/input.txt")))
   ([input]
    (let [lanterns (parse input)]
      (loop [day 0 lanterns (frequencies lanterns)]
-       (println :day day)
        (if (>= day 256)
          (reduce + (vals lanterns))
          (recur (inc day) (progress' lanterns)))))))
 
 (comment
 (part-one example)
-(part-two example))
+(part-one)
+(part-two example)
+(part-two))
