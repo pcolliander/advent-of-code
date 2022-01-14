@@ -13,11 +13,10 @@
              10000
              11001
              00010
-             01010"
+             01010")
 
-(defn- read-input [input-path]
-  (let [input (slurp input-path)]
-    (->> (string/split-lines input))))
+(defn- parse [input]
+  (->> (string/split-lines input)))
 
 (defn- bit->decimal [bit]
   (Integer/parseInt bit 2))
@@ -33,20 +32,22 @@
 (defn- remove-first-digit [line]
   (string/join (next (vec line))))
 
-(defn part-one [input-path]
-  (let [lines (read-input input-path)]
-    (loop [lines lines
-           gamma nil]
-      (if (ffirst lines)
-        (let [digit (->> lines 
-                         (map first)
-                         (frequencies)
-                         (sort-by val)
-                         (reverse)
-                         (ffirst))]
-          (recur (map remove-first-digit lines) (str gamma digit)))
-        (let [epsilon (gamma->epsilon gamma)]
-          (* (bit->decimal gamma) (bit->decimal epsilon)))))))
+(defn part-one
+  ([]  (part-one (slurp "./src/2021/day3/input.txt")))
+  ([input]
+   (let [lines (parse input)]
+     (loop [lines lines
+            gamma nil]
+       (if (ffirst lines)
+         (let [digit (->> lines 
+                          (map first)
+                          (frequencies)
+                          (sort-by val)
+                          (reverse)
+                          (ffirst))]
+           (recur (map remove-first-digit lines) (str gamma digit)))
+         (let [epsilon (gamma->epsilon gamma)]
+           (* (bit->decimal gamma) (bit->decimal epsilon))))))))
 
 ;; --------- PART 2 -----------
 
@@ -88,16 +89,15 @@
 
        (recur (filter (partial with-digit digit letter-n) lines) (inc letter-n)))))) 
 
-(defn part-two [input-path]
-  (let [lines (read-input input-path)
-        og-rating (find-og-rating lines)
-        co2-rating (find-co2-rating lines)]
-
-       (println :og-rating og-rating)
-       (println :co2-rating co2-rating)
-
-    (* (bit->decimal og-rating) (bit->decimal co2-rating))))
+(defn part-two
+  ([]  (part-two (slurp "./src/2021/day3/input.txt")))
+  ([input]
+   (let [og-rating (find-og-rating lines)
+         co2-rating (find-co2-rating lines)]
+    (* (bit->decimal og-rating) (bit->decimal co2-rating)))))
 
 (comment
-  (part-one "./three/input.txt")
-  (part-two nil #_"./three/input.txt"))
+(part-one example)
+(part-one)
+(part-two example)
+(part-two))
