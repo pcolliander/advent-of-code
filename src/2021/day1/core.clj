@@ -1,6 +1,6 @@
-(->> ns advent-of-code-2021.one.core
-     (:require [clojure.edn :as edn]
-               [clojure.string :as string]))
+(ns advent-of-code-2021.core
+   (:require [clojure.string :as string]))
+
 (def example "199
              200
              208
@@ -19,19 +19,8 @@
 
 (defn- parse [input]
   (->> (string/split-lines input)
-       (map edn/read-string)))
-
-; naive solution.
-(defn f [input-path]
- (let [lines (read-input input-path)
-       result (->> lines
-                   (reduce (fn [result n]
-                             (if (and (:prev result) (> n (:prev result)))
-                               {:total (inc (:total result))
-                                :prev n}
-                               (assoc result :prev n)))
-                           {:total 0 :prev nil}))]
-   (:total result)))
+       (map string/trim)
+       (map #(Integer/parseInt %))))
 
 (defn part-one
   ([]  (part-one (slurp "./src/2021/day1/input.txt")))
@@ -46,8 +35,8 @@
     (count-increases xs))))
 
 (comment
-  (part-one example)
-  (part-one)
-  (part-two example)
-  (part-two))
+(part-one example)
+(part-one)
+(part-two example)
+(part-two))
 

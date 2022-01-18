@@ -1,6 +1,5 @@
 (ns advent-of-code-2021.two.core
-  (:require [clojure.edn :as edn]
-             [clojure.string :as string]))
+  (:require [clojure.string :as string]))
 
 (def example "00100
              11110
@@ -16,7 +15,8 @@
              01010")
 
 (defn- parse [input]
-  (->> (string/split-lines input)))
+  (->> (string/split-lines input)
+       (map string/trim)))
 
 (defn- bit->decimal [bit]
   (Integer/parseInt bit 2))
@@ -92,7 +92,8 @@
 (defn part-two
   ([]  (part-two (slurp "./src/2021/day3/input.txt")))
   ([input]
-   (let [og-rating (find-og-rating lines)
+   (let [lines (parse input)
+         og-rating (find-og-rating lines)
          co2-rating (find-co2-rating lines)]
     (* (bit->decimal og-rating) (bit->decimal co2-rating)))))
 
