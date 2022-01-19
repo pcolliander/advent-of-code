@@ -43,15 +43,14 @@
         height (dec (count cavern))
         width  (dec (count (first cavern)))]
     (loop [costs (priority-map [0 0] 0)]
-      (println :peek (peek costs))
-      (if (= bottom-right (first (peek costs)))
-        (get costs bottom-right)
-        (let [[pos cost] (peek costs)
-              neighbours (for [neighbour-pos (get-neighbours height width pos)
-                               :when (nil? (get costs neighbour-pos))
-                               :let [node-cost (value-at cavern neighbour-pos)]]
-                           [neighbour-pos (+ cost node-cost)])]
-          (recur (into (pop costs) neighbours)))))))
+      (let [[pos cost] (peek costs)]
+        (if (= bottom-right pos)
+          (get costs bottom-right)
+          (let [neighbours (for [neighbour-pos (get-neighbours height width pos)
+                                 :when (nil? (get costs neighbour-pos))
+                                 :let [node-cost (value-at cavern neighbour-pos)]]
+                             [neighbour-pos (+ cost node-cost)])]
+            (recur (into (dissoc costs pos) neighbours))))))))
 
 (defn part-one
   ([] (part-one (slurp "./src/2021/day15/input.txt")))
@@ -65,15 +64,17 @@
     1))
 
 (defn- scale-row [row]
-  (let [new-row (fn [row] (concat row
-                                  (->> (take-last 10 row)
+  (let [row-count (count row)
+        new-row (fn [row] (concat row
+                                  (->> (take-last row-count row)
                                        (mapv inc-risk))))]
     (nth (iterate new-row row) 4)))
 
 (defn- scale-tile [tile]
-  (let [new-tile (fn [tile] (concat
+  (let [tile-count (count tile)
+        new-tile (fn [tile] (concat
                               tile
-                              (->> (take-last 10 tile)
+                              (->> (take-last tile-count tile)
                                    (map (fn [row]
                                           (map inc-risk row))))))]
     (nth (iterate new-tile tile) 4)))
@@ -90,16 +91,6 @@
      (traverse expanded-cavern))))
 
 (comment
-
-;; (scale-row [1 1 6 3 7 5 1 7 4 2])
-;;
-;; (scale-tile (map scale-row (parse example)))
-;;
-;; (let [cavern (parse example)
-;;       tile (map scale-row cavern)]
-;;     (scale-tile tile)) 
-
-
 (parse example)
 (part-one example)
 (part-one)
