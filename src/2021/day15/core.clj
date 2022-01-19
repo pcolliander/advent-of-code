@@ -22,34 +22,27 @@
 (defn- get-neighbours [height width [x y]]
   (cond-> []
     (pos? x) (conj [(dec x) y]) ; left
-    (< x width) (conj [(inc x) y])
+    (< x (dec width)) (conj [(inc x) y])
     (pos? y) (conj [x (dec y)]) ; up
-    (< y height) (conj [x (inc y)])))
+    (< y (dec height)) (conj [x (inc y)])))
 
 (defn- parse [input]
   (->> (string/split-lines input)
        (map string/trim)
-       (map (fn [line]
-              (map #(Integer/parseInt (str %)) line)))))
+       (mapv (fn [line]
+              (mapv #(Integer/parseInt (str %)) line)))))
 
-(defn- bottom-right [cavern]
-  (let [bottom (nth cavern (dec (count cavern)))]
-    (nth bottom (dec (count (first cavern))))
-    [(dec (count (first cavern)))
-     (dec (count cavern))]))
 
 (defn- traverse [cavern]
-  (let [bottom-right (bottom-right cavern)
-        height (dec (count cavern))
-        width  (dec (count (first cavern)))]
+  (let [height (count cavern)
+        width  (count (first cavern))]
     (loop [costs (priority-map [0 0] 0)]
       (let [[pos cost] (peek costs)]
-        (if (= bottom-right pos)
-          (get costs bottom-right)
+        (if (= pos [(dec width) (dec height)])
+          cost
           (let [neighbours (for [neighbour-pos (get-neighbours height width pos)
-                                 :when (nil? (get costs neighbour-pos))
-                                 :let [node-cost (value-at cavern neighbour-pos)]]
-                             [neighbour-pos (+ cost node-cost)])]
+                                 :when (nil? (find costs neighbour-pos))]
+                             [neighbour-pos (+ cost (value-at cavern neighbour-pos))])]
             (recur (into (dissoc costs pos) neighbours))))))))
 
 (defn part-one
@@ -65,18 +58,22 @@
 
 (defn- scale-row [row]
   (let [row-count (count row)
-        new-row (fn [row] (concat row
-                                  (->> (take-last row-count row)
-                                       (mapv inc-risk))))]
+        new-row (fn [row] (into
+                            []
+                            (concat
+                              row
+                              (->> (take-last row-count row)
+                                   (mapv inc-risk)))))]
     (nth (iterate new-row row) 4)))
 
 (defn- scale-tile [tile]
   (let [tile-count (count tile)
-        new-tile (fn [tile] (concat
-                              tile
-                              (->> (take-last tile-count tile)
-                                   (map (fn [row]
-                                          (map inc-risk row))))))]
+        new-tile (fn [tile] (into []
+                              (concat
+                                tile
+                                (->> (take-last tile-count tile)
+                                     (mapv (fn [row]
+                                             (mapv inc-risk row)))))))]
     (nth (iterate new-tile tile) 4)))
 
 (defn- expand-cavern [cavern]
@@ -92,8 +89,8 @@
 
 (comment
 (parse example)
-(part-one example)
-(part-one)
-(part-two example)
-(part-two))
+(time (part-one example))
+(time (part-one)) ; 3101.96 msescs.
+(time (part-two example))
+(time (part-two)))
 
