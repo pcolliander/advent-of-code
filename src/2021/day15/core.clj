@@ -16,9 +16,6 @@
              1293138521
              2311944581")
 
-(defn- value-at [matrix [x y]]
-  (nth (nth matrix y) x))
-
 (defn- get-neighbours [height width [x y]]
   (cond-> []
     (pos? x) (conj [(dec x) y]) ; left
@@ -35,15 +32,20 @@
 
 (defn- traverse [cavern]
   (let [height (count cavern)
-        width  (count (first cavern))]
-    (loop [costs (priority-map [0 0] 0)]
-      (let [[pos cost] (peek costs)]
-        (if (= pos [(dec width) (dec height)])
-          cost
-          (let [neighbours (for [neighbour-pos (get-neighbours height width pos)
-                                 :when (nil? (find costs neighbour-pos))]
-                             [neighbour-pos (+ cost (value-at cavern neighbour-pos))])]
-            (recur (into (dissoc costs pos) neighbours))))))))
+        width  (count (first cavern))
+        value-at (fn [[x y]] (nth (nth cavern y) x))]
+     (loop [costs (priority-map [0 0] 0)
+           visited #{[0 0]}]
+      (if (empty? costs)
+        (second (peek costs))
+        (let [[pos cost] (peek costs)]
+          (if (= pos [(dec width) (dec height)])
+            cost
+            (let [neighbours (for [neighbour-pos (get-neighbours height width pos)
+                                   :when (nil? (visited neighbour-pos))]
+                               [neighbour-pos (+ cost (value-at neighbour-pos))])]
+              (recur (into (dissoc costs pos) neighbours)
+                     (into visited (map first neighbours))))))))))
 
 (defn part-one
   ([] (part-one (slurp "./src/2021/day15/input.txt")))
@@ -88,9 +90,12 @@
      (traverse expanded-cavern))))
 
 (comment
+(do
+  (set! *warn-on-reflection* true)
+  (require 'advent-of-code-2021.core :reload))
 (parse example)
 (time (part-one example))
-(time (part-one)) ; 3101.96 msescs.
+(time (part-one))
 (time (part-two example))
 (time (part-two)))
 
