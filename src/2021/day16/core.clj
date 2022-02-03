@@ -49,17 +49,8 @@
           [full-packet remaining])
         (recur remaining (conj groups group))))))
 
-(defn- size-of-literal [literal]
-  (reduce (fn [acc n]
-            (+ acc (count n))) 0 literal))
-
-(comment
-  (let [binary (parse "D2FE28")
-        [header tail] (split-at 6 binary)
-        [literal remaining] (extract-literal tail)]
-
-    (size-of-literal literal)))
-
+(defn- size-of-literal [accumulator literal-group]
+  (+ accumulator (count literal-group)))
 
 (defn- get-length-type [binary length]
   (let [[head tail] (split-at length binary)
@@ -77,38 +68,46 @@
 
     (cond
       (literal? type-id) (let [[literal rest-of-binary] (extract-literal binary-tail)]      
+                           (println :literal/literal literal)
                            {:version-number version
                             :literal literal
-                            :len (size-of-literal literal)})
+                            :len (reduce
+                                   size-of-literal
+                                   (count header)
+                                   literal)})
 
       (operator? type-id) (let [[length-type-id & operator-tail] binary-tail]
                             (println :length-type-id length-type-id)
                             (case length-type-id
-                              \0 (let [[length-type-total remaining] (get-length-type operator-tail 15)]
+                              0 (let [[length-type-total remaining] (get-length-type operator-tail 15)]
                                    (loop [binary remaining
-                                          subpackets []
-                                          n 0
-                                          ]
-                                     (println :length-type-total length-type-total)
-                                     (println :subpackets subpackets)
-                                     (println :remaining remaining)
-                                     (if (or 
-                                           (= n 10)
-                                           #_(= length-type-total (subpackets-in-bit-size subpackets)))
-                                       {:version version}
-                                       (let [parsed (parse-packet binary)]
-                                         (recur binary (conj subpackets parsed) (inc n))))))
+                                          subpackets []]
+                                     (println :operator/length-type-total length-type-total)
+                                     (println :operator/subpackets subpackets)
+                                     (println :operator/remaining remaining)
+                                     (println :operator/length (reduce + (map :len subpackets)))
 
-                              \1 (let [[length-type-total remaining] (get-length-type operator-tail 11)]
+                                     (let [parsed-length (reduce + (map :len subpackets))]
+                                       (if (= length-type-total parsed-length)
+                                         {:version version
+                                          :subpackets subpackets
+                                          :len parsed-length}
+                                         (let [parsed (parse-packet binary)
+                                               [_ rest-of-binary] (split-at (:len parsed) binary)]
+                                           (recur
+                                             rest-of-binary
+                                             (conj subpackets parsed)))))))
+
+                              1 (let [[length-type-total remaining] (get-length-type operator-tail 11)]
                                    (loop [binary remaining
                                           subpackets []
-                                          n 0
-                                          ]
+                                          n 0]
                                      (println :subpackets subpackets)
                                      (if (or
                                            (= length-type-total (count subpackets))
                                            (= n 10))
-                                       {:version version}
+                                       {:version version
+                                        :len (->> subpackets (map :len) (reduce +))} ; ?
                                        (let [parsed (parse-packet binary)]
                                          (recur binary (conj subpackets parsed) (inc n)))))))))))
 
