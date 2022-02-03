@@ -84,8 +84,6 @@
                                           subpackets []]
                                      (println :operator/length-type-total length-type-total)
                                      (println :operator/subpackets subpackets)
-                                     (println :operator/remaining remaining)
-                                     (println :operator/length (reduce + (map :len subpackets)))
 
                                      (let [parsed-length (reduce + (map :len subpackets))]
                                        (if (= length-type-total parsed-length)
@@ -100,16 +98,19 @@
 
                               1 (let [[length-type-total remaining] (get-length-type operator-tail 11)]
                                    (loop [binary remaining
-                                          subpackets []
-                                          n 0]
+                                          subpackets []]
                                      (println :subpackets subpackets)
-                                     (if (or
-                                           (= length-type-total (count subpackets))
-                                           (= n 10))
-                                       {:version version
-                                        :len (->> subpackets (map :len) (reduce +))} ; ?
-                                       (let [parsed (parse-packet binary)]
-                                         (recur binary (conj subpackets parsed) (inc n)))))))))))
+                                     (println :operator/length-type-total length-type-total)
+                                     (println :operator/subpackets subpackets)
+
+                                     (let [parsed-length (reduce + (map :len subpackets))]
+                                       (if (= length-type-total (count subpackets))
+                                         {:version version
+                                          :subpackets subpackets
+                                          :len parsed-length}
+                                         (let [parsed (parse-packet binary)
+                                               [_ rest-of-binary] (split-at (:len parsed) binary)]
+                                           (recur rest-of-binary (conj subpackets parsed))))))))))))
 
 (defn part-one
   ([] (part-one (slurp "./src/2021/day16/input.txt")))
@@ -121,4 +122,5 @@
 ;; (extract-literal "101111111000101000")
 (parse "D2FE28")
 (part-one "D2FE28")
-(part-one "38006F45291200"))
+(part-one "38006F45291200")
+(part-one "EE00D40C823060"))
