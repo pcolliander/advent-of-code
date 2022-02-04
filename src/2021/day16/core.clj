@@ -48,9 +48,6 @@
         length-type (string/join head)]
     [(Long/parseLong length-type 2) tail]))
 
-(Long/parseLong "00000000010" 2)
-(Long/parseLong "000000000010110" 2)
-
 (defn- parse-packet [binary]
   (let [[header binary-tail] (split-at 6 binary)
         version (->> header (take 3) string/join)
@@ -96,8 +93,6 @@
                                                [_ rest-of-binary] (split-at (:len parsed) binary)]
                                            (recur rest-of-binary (conj subpackets parsed))))))))))))
 
-(Long/parseLong "000" 2)
-(Long/parseLong "011" 2)
 (defn part-one
   ([] (part-one (slurp "./src/2021/day16/input.txt")))
   ([input]
