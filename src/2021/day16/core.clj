@@ -33,17 +33,14 @@
 
 (defn- compute-literal [literal]
   (Long/parseLong (string/join
-                    (->> literal
-                         (map (fn [lit]
-                                (string/join (drop 1 lit)))))) 2))
+                    (map #(string/join (drop 1 %)) literal)) 2))
 
 (defn- extract-literal [package]
   (loop [package package
          groups []]
     (let [[group remaining] (split-at 5 package)]
       (if (zero? (first group))
-        (let [full-packet (conj groups group)]
-          [full-packet remaining])
+        (conj groups group)
         (recur remaining (conj groups group))))))
 
 (defn- size-of-literal [accumulator literal-group]
@@ -52,7 +49,7 @@
 (defn- get-length-type [binary length]
   (let [[head tail] (split-at length binary)
         length-type (string/join head)]
-    [(Long/parseLong length-type 2) tail]))
+    [(Long/parseLong length-type 2) (vec tail)]))
 
 (defn- calculate-value [type-id subpackets]
   (let [values (map :value subpackets)]
@@ -61,11 +58,9 @@
       1 (apply * values)
       2 (apply min values)
       3 (apply max values)
-
       5 (if (> (first values) (second values))
           1
           0)
-
       6 (if (< (first values) (second values))
           1
           0)
@@ -73,50 +68,46 @@
 
 (defn- parse-packet [binary]
   (let [[header binary-tail] (split-at 6 binary)
-        version (->> header (take 3) string/join)
+        version (Long/parseLong (->> header (take 3) string/join) 2)
         type-id (->> header (take-last 3) string/join)
         header-size (count header)]
     (cond
-      (literal? type-id) (let [[literal rest-of-binary] (extract-literal binary-tail)]      
-                           {:version-number version
-                            :version-sum (Long/parseLong version 2)
+      (literal? type-id) (let [literal (extract-literal binary-tail)]      
+                           {:version-sum version
                             :value (compute-literal literal)
-                            :literal literal
                             :len (reduce
                                    size-of-literal
                                    header-size
                                    literal)})
 
-      (operator? type-id) (let [[length-type-id & operator-tail] binary-tail]
+      (operator? type-id) (let [[length-type-id & package] binary-tail]
                             (case length-type-id
-                              0 (let [[length-type-total remaining] (get-length-type operator-tail 15)]
+                              0 (let [[length-type-total remaining] (get-length-type package 15)]
                                    (loop [binary remaining
                                           subpackets []]
                                      (let [parsed-length (reduce + (map :len subpackets))]
                                        (if (= length-type-total parsed-length)
-                                         {:version version
-                                          :version-sum (+ (Long/parseLong version 2) (apply + (map :version-sum subpackets)))
+                                         {:version-sum (+ version (apply + (map :version-sum subpackets)))
                                           :value (calculate-value type-id subpackets)
                                           :len (+ header-size 16 parsed-length)
                                           :subpackets subpackets}
                                          (let [parsed (parse-packet binary)
-                                               [_ rest-of-binary] (split-at (:len parsed) binary)]
+                                               rest-of-binary (subvec binary (:len parsed))]
                                            (recur
                                              rest-of-binary
                                              (conj subpackets parsed)))))))
 
-                              1 (let [[length-type-total remaining] (get-length-type operator-tail 11)]
+                              1 (let [[length-type-total remaining] (get-length-type package 11)]
                                    (loop [binary remaining
                                           subpackets []]
                                      (let [parsed-length (reduce + (map :len subpackets))]
                                        (if (= length-type-total (count subpackets))
-                                         {:version version
-                                          :version-sum (+ (Long/parseLong version 2) (apply + (map :version-sum subpackets)))
+                                         {:version-sum (+ version (apply + (map :version-sum subpackets)))
                                           :value (calculate-value type-id subpackets)
                                           :len (+ header-size 12 parsed-length)
                                           :subpackets subpackets}
                                          (let [parsed (parse-packet binary)
-                                               [_ rest-of-binary] (split-at (:len parsed) binary)]
+                                               rest-of-binary (subvec binary (:len parsed))]
                                            (recur rest-of-binary (conj subpackets parsed))))))))))))
 
 (defn part-one
@@ -124,7 +115,6 @@
   ([input]
    (let [binary (parse input)
          result (parse-packet binary)]
-
      (:version-sum result))))
 
 (defn part-two
@@ -132,7 +122,6 @@
   ([input]
    (let [binary (parse input)
          result (parse-packet binary)]
-
      (:value result))))
 
 (comment
