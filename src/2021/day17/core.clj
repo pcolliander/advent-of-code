@@ -51,7 +51,7 @@
   ([input]
    (let [target-area (parse input)
          [[x-min x-max] [y-min y-max]] target-area
-         shots (for [x (range 0 (inc x-max))
+         shots (for [x (range 1 (inc x-max))
                      y (range y-min (Math/abs y-min))
                      :let [shot (shoot target-area [x y])]
                      :when shot]
@@ -63,7 +63,7 @@
   ([input]
    (let [ target-area (parse input)
          [[x-min x-max] [y-min y-max]] target-area
-         shots (for [x (range 0 (inc x-max))
+         shots (for [x (range 1 (inc x-max))
                      y (range y-min (Math/abs y-min))
                      :let [shot (shoot target-area [x y])]
                      :when shot]
