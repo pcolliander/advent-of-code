@@ -13,14 +13,6 @@
   (map (fn [row]
          (map #(Integer/parseInt %) row))))) 
 
-(->> (parse example)
-     (map (fn [row]
-            (map #(Integer/parseInt %) row))))
-
-(range 20 30)
-(some 11 (range -5 10))
-
-
 (defn- apply-drag [x-velocity]
   (cond 
     (zero? x-velocity) x-velocity
@@ -42,20 +34,12 @@
 (defn- shoot [[[x-min x-max] [y-min y-max]] [x-velocity y-velocity]]
   (let [x-range (range x-min (inc x-max))
         y-range (range y-min (inc y-max))]
-
-    ;; (println :x-range x-range) (println :y-range y-range)
-
   (loop [[x y] [0 0]
          x-velocity x-velocity
          y-velocity y-velocity
          y-max 0]
-    ;;
-    ;; (println [x y])
-    ;; (println :x-velocity x-velocity)
-    ;; (println :y-velocity y-velocity)
-    ;;
     (cond
-      (within-target-area? [x y] x-range y-range) y-max
+      (within-target-area? [x y] x-range y-range) [y-max [x-velocity y-velocity]]
       (missed-target-area? [x y] x-range y-range y-velocity) nil
       :else (recur [(+ x x-velocity) (+ y y-velocity)]
                    (apply-drag x-velocity)
@@ -67,13 +51,27 @@
   ([input]
    (let [target-area (parse input)
          shots (for [x (range 0 (-> target-area first second inc))
-                     y (range 0 450)]
-                 (shoot target-area [x y]))]
+                     y (range -100 200)
+                     :let [shot (shoot target-area [x y])]
+                     :when shot]
+                 shot)]
+     (apply max (->> shots (map first) (filter some?))))))
 
-
-     (apply max (filter some? shots)))))
+(defn part-two
+  ([] (part-two (slurp "./src/2021/day17/input.txt")))
+  ([input]
+   (let [target-area (parse input)
+         shots (for [x (range 0 (-> target-area first second inc))
+                     y (range -250 250)
+                     :let [shot (shoot target-area [x y])]
+                     :when shot]
+                 shot)]
+     (count shots))))
 
 (comment
 (parse example)
 (part-one example)
-(part-one))
+(part-one)
+(part-two example)
+(part-two)
+)
