@@ -50,8 +50,9 @@
   ([] (part-one (slurp "./src/2021/day17/input.txt")))
   ([input]
    (let [target-area (parse input)
-         shots (for [x (range 0 (-> target-area first second inc))
-                     y (range -100 200)
+         [[x-min x-max] [y-min y-max]] target-area
+         shots (for [x (range 0 (inc x-max))
+                     y (range y-min (Math/abs y-min))
                      :let [shot (shoot target-area [x y])]
                      :when shot]
                  shot)]
@@ -60,9 +61,10 @@
 (defn part-two
   ([] (part-two (slurp "./src/2021/day17/input.txt")))
   ([input]
-   (let [target-area (parse input)
-         shots (for [x (range 0 (-> target-area first second inc))
-                     y (range -250 250)
+   (let [ target-area (parse input)
+         [[x-min x-max] [y-min y-max]] target-area
+         shots (for [x (range 0 (inc x-max))
+                     y (range y-min (Math/abs y-min))
                      :let [shot (shoot target-area [x y])]
                      :when shot]
                  shot)]
@@ -73,5 +75,4 @@
 (part-one example)
 (part-one)
 (part-two example)
-(part-two)
-)
+(part-two))
