@@ -20,7 +20,10 @@
 (defn- parse [input]
   (->> (string/split-lines input)
        (map string/trim)
-       (map #(string/split % #" \| "))))
+       (map #(string/split % #" \| "))
+       (map (fn [[signal-patterns output-values]]
+              [(->> (string/split signal-patterns #" ") (map string/trim))
+               (->> (string/split output-values #" ") (map string/trim))]))))
 
 (defn part-one
   ([] (part-one (slurp "./src/2021/day8/input.txt")))
@@ -28,10 +31,10 @@
    (let [values (parse input)]
      (->> values
           (map (fn [[_ output-values]]
-                    (->> (string/split output-values #" ")
-                         (map count)
-                         (filter (fn [output-value]
-                                   (some #{output-value} #{2 4 3 7}))))))
+                 (->> output-values
+                      (map count)
+                      (filter (fn [output-value]
+                                (some #{output-value} #{2 4 3 7}))))))
           (map #(reduce (fn [acc n]
                           (inc acc)) 0 %))
           (reduce +)))))
@@ -94,9 +97,8 @@
             pattern))
         patterns))
 
-(defn- build-wire-connections [[signal-patterns output-value]]
-  (let [patterns (string/split signal-patterns #" ")
-        one (some #(when (= 2 (count %)) %) patterns)
+(defn- build-wire-connections [[patterns output-value]]
+  (let [one (some #(when (= 2 (count %)) %) patterns)
         four (some #(when (= 4 (count %)) %) patterns) 
         seven (some #(when (= 3 (count %)) %) patterns) 
         eight (some #(when (= 7 (count %)) %) patterns)
@@ -109,10 +111,10 @@
         three (first (filter (complement #{zero one two four five six seven eight nine}) patterns))
         all (into {} (map-indexed (fn [index value]
                                     [(set value) index])
-                                   [zero one two three four five six seven eight nine]))
-        output-keys (map set (string/split output-value #" "))]
+                                   [zero one two three four five six seven eight nine]))]
 
-    (->> output-keys
+    (->> output-value
+         (map set)
          (map #(get all %))
          string/join
          Integer/parseInt)))
@@ -121,7 +123,6 @@
   ([] (part-two (slurp "./src/2021/day8/input.txt")))
   ([input]
    (let [values (parse input)]
-     (pp/pprint values)
      (->> values
           (map build-wire-connections)
           (reduce +)))))
