@@ -4,7 +4,7 @@
             [clojure.set :as cset]
             [clojure.pprint :as pp]))
 
-(def example "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
+(def larger-example "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
               edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
               fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
               fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
@@ -15,7 +15,7 @@
               egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
               gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce")
 
-(def example2 "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf")
+(def example "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf")
 
 (defn- parse [input]
   (->> (string/split-lines input)
@@ -36,21 +36,11 @@
                           (inc acc)) 0 %))
           (reduce +)))))
 
-(defn- one? [pattern]
-  (= 2 (count pattern)))
+(defn- get-top [patterns one seven]
+  (first (cset/difference (set seven) (set one))))
 
-(defn- seven? [pattern]
-  (= 3 (count pattern)))
-
-(defn- get-top [patterns]
-  (let [[one seven] (concat
-                      (filter one? patterns)
-                      (filter seven? patterns))]
-  {:top (first (cset/difference (set seven) (set one)))}))
-
-(defn- get-six [patterns]
-  (let [one (->> patterns (filter one?) first)
-        [top-right segment-six] (->> patterns
+(defn- get-six [patterns one]
+  (let [[top-right segment-six] (->> patterns
                                      (some (fn [pattern]
                                              (let [difference (cset/difference (set one) (set pattern))]
                                                (when (and 
@@ -104,41 +94,42 @@
             pattern))
         patterns))
 
-(defn- build-wire-connections [patterns]
-  (let [one (some #(when (= 2 (count %)) %) patterns)
+(defn- build-wire-connections [[signal-patterns output-value]]
+  (let [patterns (string/split signal-patterns #" ")
+        one (some #(when (= 2 (count %)) %) patterns)
         four (some #(when (= 4 (count %)) %) patterns) 
         seven (some #(when (= 3 (count %)) %) patterns) 
         eight (some #(when (= 7 (count %)) %) patterns)
-        {:keys [top]} (get-top patterns)
-        [{:keys [top-right bottom-right]} six] (get-six patterns)
+        top (get-top patterns one seven)
+        [{:keys [top-right bottom-right]} six] (get-six patterns one)
         [{:keys [bottom-left]} five] (get-five six patterns)
         nine (get-nine patterns eight bottom-left)
         zero (get-zero patterns six nine)
         two (get-two patterns bottom-right)
         three (first (filter (complement #{zero one two four five six seven eight nine}) patterns))
         all (into {} (map-indexed (fn [index value]
-                                    [value index])
-                                   [zero one two three four five six seven eight nine]))]
+                                    [(set value) index])
+                                   [zero one two three four five six seven eight nine]))
+        output-keys (map set (string/split output-value #" "))]
 
-
-
-    #_[top top-right bottom-right bottom-left]))
-
-;; (filter (complement #{1 2 3}) [1 2 3 4 5])
-;; 2, 3
-;; 0, 1, 4, 5, 6, 7, 8, 9
+    (->> output-keys
+         (map #(get all %))
+         string/join
+         Integer/parseInt)))
 
 (defn part-two
   ([] (part-two (slurp "./src/2021/day8/input.txt")))
   ([input]
    (let [values (parse input)]
-     values
+     (pp/pprint values)
      (->> values
-          (map first)
-          (map #(string/split % #" "))
-          (map build-wire-connections)))))
+          (map build-wire-connections)
+          (reduce +)))))
+
 (comment
 (part-one example)
 (part-one)
 
-(part-two example2))
+(part-two example)
+(part-two larger-example)
+(part-two))
