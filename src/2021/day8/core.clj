@@ -36,50 +36,97 @@
                           (inc acc)) 0 %))
           (reduce +)))))
 
-(def digit
-  {:top nil
-   :top-left nil
-   :top-right nil
-   :middle nil
-   :bottom-left nil
-   :bottom-right nil
-   :bottom nil})
-
 (defn- one? [pattern]
   (= 2 (count pattern)))
 
 (defn- seven? [pattern]
   (= 3 (count pattern)))
 
-(defn- top [digit patterns]
+(defn- get-top [patterns]
   (let [[one seven] (concat
                       (filter one? patterns)
                       (filter seven? patterns))]
-  (assoc digit :top (first (cset/difference (set seven) (set one))))))
+  {:top (first (cset/difference (set seven) (set one)))}))
 
-(defn- top-right [digit patterns]
+(defn- get-six [patterns]
   (let [one (->> patterns (filter one?) first)
-        value (some (fn [pattern]
-                      (let [difference (cset/difference (set one) (set pattern))]
-                        (when (= 1 (count difference))
-                          (first difference)))) patterns)]
-    (assoc digit :top-right value)))
+        [top-right segment-six] (->> patterns
+                                     (some (fn [pattern]
+                                             (let [difference (cset/difference (set one) (set pattern))]
+                                               (when (and 
+                                                       (= 1 (count difference))
+                                                       (= 6 (count pattern)))
+                                                 [(first difference) pattern])))))
+        bottom-right (cset/difference (set one) #{top-right})]
 
-(defn- build-wire-connections [signal-patterns]
-  (-> digit
-      (top signal-patterns)
-      (top-right signal-patterns)))
+    [{:top-right top-right
+      :bottom-right bottom-right}
+     segment-six]))
 
-(build-wire-connections ["acedgfb" "dab" "eafb" "ab" "cefabd" "cdfgeb"])
+(defn- get-five [segment-six patterns]
+  (let [[value segment-five] (->> patterns
+                                  (some (fn [pattern]
+                                          (let [difference (cset/difference (set segment-six) (set pattern))]
+                                            (when (and 
+                                                    (= 1 (count difference))
+                                                    (= 5 (count pattern)))
+                                              [(first difference) pattern])))))]
+    [{:bottom-left value}
+      segment-five]))
 
-;; figure out **top** by comparing 7 with 1.
-;; figure out top-right by diffing 6 and 1
-;; figure out bottom-left by comparing 5 and 6 (six found in previous step).
+(defn- get-zero [patterns six nine]
+  (some (fn [pattern]
+          (when
+            (and
+              (= 6 (count pattern))
+              (not= six pattern)
+              (not= nine pattern))
+            pattern))
+        patterns))
 
-;; figure out top-right by finding 5 & 6 that's both missing the number in top-right or bottom-right.
-;; then compare 5 & 6 to see which is missing in bottom-left.
-;; the search for 0 which will be missing the middle part.
+(defn- get-nine [patterns eight bottom-left]
+  (some (fn [pattern]
+          (when
+            (and
+              (= 6 (count pattern))
+              (= 
+                (set eight)
+                (cset/union (set pattern) #{bottom-left})))
+            pattern))
+        patterns))
 
+(defn- get-two [patterns bottom-right]
+ (some (fn [pattern]
+          (when
+            (and
+              (= 5 (count pattern))
+              (not (contains? (set pattern) (first bottom-right))))
+            pattern))
+        patterns))
+
+(defn- build-wire-connections [patterns]
+  (let [one (some #(when (= 2 (count %)) %) patterns)
+        four (some #(when (= 4 (count %)) %) patterns) 
+        seven (some #(when (= 3 (count %)) %) patterns) 
+        eight (some #(when (= 7 (count %)) %) patterns)
+        {:keys [top]} (get-top patterns)
+        [{:keys [top-right bottom-right]} six] (get-six patterns)
+        [{:keys [bottom-left]} five] (get-five six patterns)
+        nine (get-nine patterns eight bottom-left)
+        zero (get-zero patterns six nine)
+        two (get-two patterns bottom-right)
+        three (first (filter (complement #{zero one two four five six seven eight nine}) patterns))
+        all (into {} (map-indexed (fn [index value]
+                                    [value index])
+                                   [zero one two three four five six seven eight nine]))]
+
+
+
+    #_[top top-right bottom-right bottom-left]))
+
+;; (filter (complement #{1 2 3}) [1 2 3 4 5])
+;; 2, 3
+;; 0, 1, 4, 5, 6, 7, 8, 9
 
 (defn part-two
   ([] (part-two (slurp "./src/2021/day8/input.txt")))
@@ -93,4 +140,5 @@
 (comment
 (part-one example)
 (part-one)
-(part-two example))
+
+(part-two example2))
