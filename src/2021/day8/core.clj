@@ -30,13 +30,10 @@
   ([input]
    (let [values (parse input)]
      (->> values
-          (map (fn [[_ output-values]]
-                 (->> output-values
-                      (map count)
-                      (filter #(#{2 4 3 7} %)))))
-          (map #(reduce (fn [acc n]
-                          (inc acc)) 0 %))
-          (reduce +)))))
+          (mapcat (fn [[_ output-values]]
+                    (map count output-values)))
+          (filter #(#{2 4 3 7} %))
+          count))))
 
 (defn- get-six [patterns one]
   (let [[top-right segment-six] (->> patterns
@@ -118,7 +115,7 @@
           (reduce +)))))
 
 (comment
-(part-one example)
+(part-one larger-example)
 (part-one)
 
 (part-two example)
