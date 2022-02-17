@@ -33,14 +33,10 @@
           (map (fn [[_ output-values]]
                  (->> output-values
                       (map count)
-                      (filter (fn [output-value]
-                                (some #{output-value} #{2 4 3 7}))))))
+                      (filter #(#{2 4 3 7} %)))))
           (map #(reduce (fn [acc n]
                           (inc acc)) 0 %))
           (reduce +)))))
-
-(defn- get-top [patterns one seven]
-  (first (cset/difference (set seven) (set one))))
 
 (defn- get-six [patterns one]
   (let [[top-right segment-six] (->> patterns
@@ -52,8 +48,7 @@
                                                  [(first difference) pattern])))))
         bottom-right (cset/difference (set one) #{top-right})]
 
-    [{:top-right top-right
-      :bottom-right bottom-right}
+    [{:bottom-right bottom-right}
      segment-six]))
 
 (defn- get-five [segment-six patterns]
@@ -69,13 +64,9 @@
 
 (defn- get-zero [patterns six nine]
   (some (fn [pattern]
-          (when
-            (and
-              (= 6 (count pattern))
-              (not= six pattern)
-              (not= nine pattern))
+          (when (= 6 (count pattern))
             pattern))
-        patterns))
+        (filter (complement #{six nine}) patterns)))
 
 (defn- get-nine [patterns eight bottom-left]
   (some (fn [pattern]
@@ -102,8 +93,7 @@
         four (some #(when (= 4 (count %)) %) patterns) 
         seven (some #(when (= 3 (count %)) %) patterns) 
         eight (some #(when (= 7 (count %)) %) patterns)
-        top (get-top patterns one seven)
-        [{:keys [top-right bottom-right]} six] (get-six patterns one)
+        [{:keys [bottom-right]} six] (get-six patterns one)
         [{:keys [bottom-left]} five] (get-five six patterns)
         nine (get-nine patterns eight bottom-left)
         zero (get-zero patterns six nine)
