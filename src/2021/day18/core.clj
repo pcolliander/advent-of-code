@@ -39,6 +39,17 @@
               [[[5,[7,4]],7],1]
               [[[[4,2],2],6],[8,7]]")
 
+(def homework "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+              [[[5,[2,8]],4],[5,[[9,9],0]]]
+              [6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+              [[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+              [[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+              [[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+              [[[[5,4],[7,7]],8],[[8,3],8]]
+              [[9,3],[[9,9],[6,[4,9]]]]
+              [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+              [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]")
+
 (defn- parse [input]
   (->> (string/split-lines input)
        (map string/trim)
@@ -77,7 +88,7 @@
     loc))
 
 (defn- explode [loc]
-  (println :explode (zip/node loc))
+  ;; (println :explode (zip/node loc))
   (let [[x y] (zip/node loc)]
     (-> loc
         (edit number-to-the-left x)
@@ -91,7 +102,7 @@
     (>= (zip/node loc) 10)))
 
 (defn- split-one [loc]
-  (println :split-one (zip/node loc))
+  ;; (println :split-one (zip/node loc))
   (let [number (zip/node loc)]
     (-> loc
         (zip/replace [(-> number (/ 2) Math/floor int) (-> number (/ 2) Math/ceil int)])
@@ -118,20 +129,45 @@
           (recur (-> exploded zip/root zip/vector-zip)))
         (recur (zip/next loc))))))
 
+(defn- add [[a b]]
+  ;; (println a b)
+  (+ (* 3 a) (* 2 b)))
 
-;; (defn- magnitude [pair]
-;;   (
+(defn- magnitude [pair]
+  (loop [loc (zip/vector-zip pair)]
+    (if (zip/end? loc)
+      (cond
+        (and
+          (vector? (zip/node loc))
+          (every? number? (zip/node loc))) (add (zip/node loc))
+        (number? (zip/node loc)) (zip/node loc)
+        :else (recur
+                (zip/vector-zip (zip/root loc))))
+      (let [node (zip/node loc)]
+        ;; (println :ndoe node)
+        (if (and
+              (vector? node)
+              (every? number? node))
+          (recur (-> loc
+                     (zip/replace (add node))
+                     zip/next))
+          (recur (zip/next loc)))))))
+
+
+  
 
 (defn part-one
-  ([] (part-one (slurp "./src/2021/day17/input.txt")))
+  ([] (part-one (slurp "./src/2021/day18/input.txt")))
   ([input]
    (let [snail-list (parse input)]
-     (reduce (fn [acc snail]
-               (let [reduce-result (reduce-pair [acc snail])]
-                 (println :reduce-result reduce-result)
-                 reduce-result
-                 ))
-             snail-list))))
+     (->> snail-list
+          (reduce (fn [acc snail]
+                    (let [reduce-result (reduce-pair [acc snail])]
+                      ;; (println :reduce-result reduce-result)
+                      reduce-result
+                      )))
+          magnitude
+          ))))
 
 (comment
 (parse example)
@@ -139,6 +175,19 @@
 (part-one example2)
 (part-one example3)
 (part-one example4)
-(part-one example5))
+(part-one example5)
+
+(magnitude [9 1])
+(magnitude [[9,1],[1,9]])
+(magnitude [[1,2],[[3,4],5]])
+(magnitude [[[[0,7],4],[[7,8],[6,0]]],[8,1]])
+(magnitude [[[[1,1],[2,2]],[3,3]],[4,4]])
+(magnitude [[1,2],[[3,4],5]])
+(magnitude [[1,2],[[3,4],5]])
+
+(part-one homework)
+(part-one)
+
+)
 
 
