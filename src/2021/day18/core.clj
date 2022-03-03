@@ -7,9 +7,9 @@
             [clojure.data.priority-map :refer [priority-map]]))
 
 (def example "[1,1]
-              [2,2]
-              [3,3]
-              [4,4]")
+             [2,2]
+             [3,3]
+             [4,4]")
 
 (def example2 "[1,1]
               [2,2]
@@ -88,7 +88,6 @@
     loc))
 
 (defn- explode [loc]
-  ;; (println :explode (zip/node loc))
   (let [[x y] (zip/node loc)]
     (-> loc
         (edit number-to-the-left x)
@@ -102,7 +101,6 @@
     (>= (zip/node loc) 10)))
 
 (defn- split-one [loc]
-  ;; (println :split-one (zip/node loc))
   (let [number (zip/node loc)]
     (-> loc
         (zip/replace [(-> number (/ 2) Math/floor int) (-> number (/ 2) Math/ceil int)])
@@ -125,12 +123,10 @@
           (reduce-pair result)))
       (if (explode? loc)
         (let [exploded (explode loc)]
-          ;; (println :exploded (zip/root exploded))
           (recur (-> exploded zip/root zip/vector-zip)))
         (recur (zip/next loc))))))
 
 (defn- add [[a b]]
-  ;; (println a b)
   (+ (* 3 a) (* 2 b)))
 
 (defn- magnitude [pair]
@@ -144,7 +140,6 @@
         :else (recur
                 (zip/vector-zip (zip/root loc))))
       (let [node (zip/node loc)]
-        ;; (println :ndoe node)
         (if (and
               (vector? node)
               (every? number? node))
@@ -153,41 +148,46 @@
                      zip/next))
           (recur (zip/next loc)))))))
 
-
-  
-
 (defn part-one
   ([] (part-one (slurp "./src/2021/day18/input.txt")))
   ([input]
    (let [snail-list (parse input)]
      (->> snail-list
           (reduce (fn [acc snail]
-                    (let [reduce-result (reduce-pair [acc snail])]
-                      ;; (println :reduce-result reduce-result)
-                      reduce-result
-                      )))
-          magnitude
-          ))))
+                    (reduce-pair [acc snail])))
+          magnitude))))
+
+(defn part-two
+  ([] (part-two (slurp "./src/2021/day18/input.txt")))
+  ([input]
+   (let [snail-list (parse input)]
+     (->> (for [a snail-list
+                b snail-list
+                :let [x (-> [a b] reduce-pair magnitude)
+                      y (-> [b a] reduce-pair magnitude)]]
+            (max x y))
+          (reduce max)))))
 
 (comment
-(parse example)
-(part-one example)
-(part-one example2)
-(part-one example3)
-(part-one example4)
-(part-one example5)
+  (parse example)
+  (part-one example)
+  (part-one example2)
+  (part-one example3)
+  (part-one example4)
+  (part-one example5)
 
-(magnitude [9 1])
-(magnitude [[9,1],[1,9]])
-(magnitude [[1,2],[[3,4],5]])
-(magnitude [[[[0,7],4],[[7,8],[6,0]]],[8,1]])
-(magnitude [[[[1,1],[2,2]],[3,3]],[4,4]])
-(magnitude [[1,2],[[3,4],5]])
-(magnitude [[1,2],[[3,4],5]])
+  (magnitude [9 1])
+  (magnitude [[9,1],[1,9]])
+  (magnitude [[1,2],[[3,4],5]])
+  (magnitude [[[[0,7],4],[[7,8],[6,0]]],[8,1]])
+  (magnitude [[[[1,1],[2,2]],[3,3]],[4,4]])
+  (magnitude [[1,2],[[3,4],5]])
+  (magnitude [[1,2],[[3,4],5]])
 
-(part-one homework)
-(part-one)
+  (part-one homework)
+  (part-one)
 
-)
+  (part-two homework)
+  (part-two))
 
 
