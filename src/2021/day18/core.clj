@@ -10,14 +10,12 @@
               [2,2]
               [3,3]
               [4,4]")
-;; => [[[[1,1],[2,2]],[3,3]],[4,4]]:
 
 (def example2 "[1,1]
               [2,2]
               [3,3]
               [4,4]
               [5,5]")
-; => [[[[3,0],[5,3]],[4,4]],[5,5]]
 
 (def example3 "[1,1]
               [2,2]
@@ -26,10 +24,13 @@
               [5,5]
               [6,6] ")
 
+(def example4 "[[[[4,3],4],4],[7,[[8,4],9]]] 
+              [1,1]")
+
 (defn- parse [input]
   (->> (string/split-lines input)
        (map string/trim)
-       (map read-string))) 
+       (mapv read-string))) 
 
 (defn- number-to-the-left [loc]
   (loop [loc (zip/prev loc)]
@@ -62,6 +63,7 @@
     loc))
 
 (defn- explode [loc]
+  (println :explode (zip/node loc))
   (let [[x y] (zip/node loc)]
     (-> loc
         (edit number-to-the-left x)
@@ -69,15 +71,35 @@
         (zip/replace 0)
         (edit number-to-the-right y))))
 
+(defn- split? [loc]
+  (and
+    (number? (zip/node loc))
+    (> (zip/node loc) 10)))
+
+(defn- split-one [loc]
+  (let [number (zip/node loc)]
+    (-> loc
+        (zip/replace [(-> number (/ 2) Math/floor int) (-> number (/ 2) Math/ceil int)])
+        zip/root)))
+
+(defn- split [snails]
+  (loop [loc (zip/vector-zip snails)]
+    (if (zip/end? loc)
+      (zip/root loc)
+      (if (split? loc)
+        (split-one loc)
+        (recur (zip/next loc))))))
+
 (defn reduce-pair [pair]
   (loop [loc (zip/vector-zip pair)]
     (if (zip/end? loc)
-      (zip/root loc)
+      (let [result (split (zip/root loc))]
+        (if (= result (zip/root loc))
+          (zip/root loc)
+          (reduce-pair result)))
       (if (explode? loc)
         (let [exploded (explode loc)]
-          (if (= (zip/root loc) (zip/root exploded))
-            (zip/root loc)
-            (recur (-> exploded zip/root zip/vector-zip))))
+          (recur (-> exploded zip/root zip/vector-zip)))
         (recur (zip/next loc))))))
 
 (defn part-one
@@ -87,13 +109,11 @@
      (reduce (fn [acc snail] (reduce-pair [acc snail]))
              snail-list))))
 
+
 (comment
 (parse example)
 (part-one example)
 (part-one example2)
 (part-one example3)
+(part-one example4))
 
-(nth (iterate reduce-pair [[[[[9,8],1],2],3],4]) 1)
-(nth (iterate reduce-pair [7,[6,[5,[4,[3,2]]]]]) 1)
-(nth (iterate reduce-pair [[[[[1,1],[2,2]],[3,3]],[4,4]] [5 5]]) 1)
-(nth (iterate reduce-pair [[[[[1,1],[2,2]],[3,3]],[4,4]] [5 5]]) 2))
