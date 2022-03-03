@@ -27,6 +27,18 @@
 (def example4 "[[[[4,3],4],4],[7,[[8,4],9]]] 
               [1,1]")
 
+
+(def example5 "[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
+              [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
+              [[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
+              [[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]
+              [7,[5,[[3,8],[1,4]]]]
+              [[2,[2,2]],[8,[8,1]]]
+              [2,9]
+              [1,[[[9,3],9],[[9,0],[0,7]]]]
+              [[[5,[7,4]],7],1]
+              [[[[4,2],2],6],[8,7]]")
+
 (defn- parse [input]
   (->> (string/split-lines input)
        (map string/trim)
@@ -37,6 +49,7 @@
     (cond
       (nil? loc) nil
       (number? (zip/node loc)) loc
+      (zip/end? loc) nil
       :else (recur (zip/prev loc)))))
 
 (defn- number-to-the-right [loc]
@@ -44,6 +57,7 @@
     (cond
       (nil? loc) nil
       (number? (zip/node loc)) loc
+      (zip/end? loc) nil
       :else (recur (zip/next loc)))))
 
 (defn- explode? [loc]
@@ -74,9 +88,10 @@
 (defn- split? [loc]
   (and
     (number? (zip/node loc))
-    (> (zip/node loc) 10)))
+    (>= (zip/node loc) 10)))
 
 (defn- split-one [loc]
+  (println :split-one (zip/node loc))
   (let [number (zip/node loc)]
     (-> loc
         (zip/replace [(-> number (/ 2) Math/floor int) (-> number (/ 2) Math/ceil int)])
@@ -99,21 +114,31 @@
           (reduce-pair result)))
       (if (explode? loc)
         (let [exploded (explode loc)]
+          ;; (println :exploded (zip/root exploded))
           (recur (-> exploded zip/root zip/vector-zip)))
         (recur (zip/next loc))))))
+
+
+;; (defn- magnitude [pair]
+;;   (
 
 (defn part-one
   ([] (part-one (slurp "./src/2021/day17/input.txt")))
   ([input]
    (let [snail-list (parse input)]
-     (reduce (fn [acc snail] (reduce-pair [acc snail]))
+     (reduce (fn [acc snail]
+               (let [reduce-result (reduce-pair [acc snail])]
+                 (println :reduce-result reduce-result)
+                 reduce-result
+                 ))
              snail-list))))
-
 
 (comment
 (parse example)
 (part-one example)
 (part-one example2)
 (part-one example3)
-(part-one example4))
+(part-one example4)
+(part-one example5))
+
 
