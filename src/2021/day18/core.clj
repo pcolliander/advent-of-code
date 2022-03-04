@@ -4,6 +4,7 @@
             [clojure.string :as string]
             [clojure.pprint :as pp]
             [clojure.zip :as zip]
+            [clojure.math.combinatorics :as combo]
             [clojure.data.priority-map :refer [priority-map]]))
 
 (def example "[1,1]
@@ -126,27 +127,12 @@
           (recur (-> exploded zip/root zip/vector-zip)))
         (recur (zip/next loc))))))
 
-(defn- add [[a b]]
-  (+ (* 3 a) (* 2 b)))
-
 (defn- magnitude [pair]
-  (loop [loc (zip/vector-zip pair)]
-    (if (zip/end? loc)
-      (cond
-        (and
-          (vector? (zip/node loc))
-          (every? number? (zip/node loc))) (add (zip/node loc))
-        (number? (zip/node loc)) (zip/node loc)
-        :else (recur
-                (zip/vector-zip (zip/root loc))))
-      (let [node (zip/node loc)]
-        (if (and
-              (vector? node)
-              (every? number? node))
-          (recur (-> loc
-                     (zip/replace (add node))
-                     zip/next))
-          (recur (zip/next loc)))))))
+  (if (number? pair)
+    pair
+    (let [[a b] pair]
+      (+ (* 3 (magnitude a)) (* 2 (magnitude b))))))
+
 
 (defn part-one
   ([] (part-one (slurp "./src/2021/day18/input.txt")))
