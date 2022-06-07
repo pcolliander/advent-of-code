@@ -26,6 +26,7 @@ ababab")
   (->> lines
        (map frequencies)
        (map vals)
+       ;; (map set)))
        (map distinct)
        flatten))
 
@@ -35,6 +36,8 @@ ababab")
    (let [freqs (get-freqs (s/split-lines input))
          twos (count (filter #{2} freqs))
          threes (count (filter #{3} freqs))]
+         ;; twos (count (filter #(contains? % 2) freqs))
+         ;; threes (count (filter #(contains? % 3) freqs))]
      (* twos threes))))
 
 (defn- get-differing-chars [left right]
