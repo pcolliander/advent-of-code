@@ -11,19 +11,31 @@ fguij
 axcye
 wvxyz")
 
+
+(def example2
+"
+abcdef
+bababc
+abbcde
+abcccd
+aabcdd
+abcdee
+ababab")
+
+(defn- get-freqs [lines]
+  (->> lines
+       (map frequencies)
+       (map vals)
+       (map distinct)
+       flatten))
+
 (defn part-one
   ([] (part-one (slurp "./src/2018/day2/input.txt")))
   ([input]
-   (let [{:keys [twos threes]} (->> (s/split-lines (slurp "./src/2018/day2/input.txt"))
-                                    (map frequencies)
-                                    (map vals)
-                                    (map frequencies)
-                                    (reduce (fn [sum {twos 2 threes 3}]
-                                              (cond-> sum
-                                                twos (update :twos inc)
-                                                threes (update :threes inc)))
-                                            {:twos 0 :threes 0}))]
-        (* twos threes))))
+   (let [freqs (get-freqs (s/split-lines input))
+         twos (count (filter #{2} freqs))
+         threes (count (filter #{3} freqs))]
+     (* twos threes))))
 
 (defn- get-differing-chars [left right]
   (->> (map vector left right)
@@ -45,5 +57,6 @@ wvxyz")
 
 (comment
   (part-one)
+  (part-one example2)
   (part-two example)
   (part-two))
