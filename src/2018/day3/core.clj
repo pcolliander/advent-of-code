@@ -10,11 +10,12 @@
 
 (defn- parse-claim [claim]
   "a claim has the form: #123 @ 3,2: 5x4"
-  (let [[_ _ left-and-top width-and-tall] (s/split claim #" ")
+  (let [[id _ left-and-top width-and-tall] (s/split claim #" ")
       [inches-from-left inches-from-top] (s/split left-and-top #",") 
       [inches-wide inches-tall] (s/split width-and-tall #"x")]
 
-  {:left (parse-long inches-from-left)
+  {:id id
+   :left (parse-long inches-from-left)
    :top  (parse-long (s/replace inches-from-top  #":" ""))
    :wide (parse-long inches-wide)
    :tall (parse-long inches-tall)}))
@@ -30,13 +31,26 @@
    (let [ranges (->> (s/split-lines input)
                      (map parse-claim)
                      (mapcat coordinates))]
-
      (->> ranges
          frequencies
          vals
          (filter #(< 1 %))
          count))))
 
+(defn part-two
+  ([] (part-two (slurp "./src/2018/day3/input.txt")))
+  ([input]
+   (let [claims (map parse-claim (s/split-lines input))
+         overlaps (->> claims
+                       (mapcat coordinates)
+                       frequencies)]
+
+     (some (fn [claim]
+             (when (every? (fn [coordinate]
+                             (= 1 (get overlaps coordinate))) (coordinates claim))
+               (:id claim))) claims))))
 (comment
 (part-one example)
-(part-one))
+(part-one)
+(part-two example)
+(part-two))
