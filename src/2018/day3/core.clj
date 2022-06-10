@@ -2,10 +2,12 @@
   (:require [clojure.string :as s]
             [clojure.set :as cs]))
 
-(defn- read-input [input-path]
-  (->> (s/split-lines (slurp input-path))))
+(def example
+"#1 @ 1,3: 4x4
+#2 @ 3,1: 4x4
+#3 @ 5,5: 2x2
+")
 
-; means that claim ID 123 specifies a rectangle 3 inches from the left edge, 2 inches from the top edge, 5 inches wide, and 4 inches tall.
 (defn- parse-claim [claim]
   "a claim has the form: #123 @ 3,2: 5x4"
   (let [[id _ left-and-top width-and-tall] (s/split claim #" ")
@@ -13,40 +15,42 @@
       [inches-wide inches-tall] (s/split width-and-tall #"x")]
 
   {:id id
-   :inches-from-left (read-string inches-from-left)
-   :inches-from-top (read-string (s/replace inches-from-top  #":" ""))
-   :inches-wide (read-string inches-wide)
-   :inches-tall (read-string inches-tall)}))
+   :left (parse-long inches-from-left)
+   :top  (parse-long (s/replace inches-from-top  #":" ""))
+   :wide (parse-long inches-wide)
+   :tall (parse-long inches-tall)}))
 
-(defn- get-range [{:keys [id inches-from-left inches-from-top inches-tall inches-wide]}]
-  (->> (range inches-from-left (+ inches-from-left inches-wide))
-    (map #(range (+ (* 10 %) inches-from-top) (+ (* 10 %)  inches-from-top inches-tall)))
-    (flatten)
-    (set))) 
+(defn- coordinates [{:keys [left top tall wide]}]
+  (for [x (range left (+ left wide))
+        y (range top (+ top tall))]
+    [x y]))
 
-; define ranges, and if ranges overlap, then save the overlapping numbers. each number is a square. 
-(defn- get-overlap [left right]
-  (clojure.set/intersection left right))
+(defn part-one
+  ([] (part-one (slurp "./src/2018/day3/input.txt")))
+  ([input]
+   (let [ranges (->> (s/split-lines input)
+                     (map parse-claim)
+                     (mapcat coordinates))]
+     (->> ranges
+         frequencies
+         vals
+         (filter #(< 1 %))
+         count))))
 
-(defn part-one [input-path]
-  (let [ranges (->> (read-input input-path)
-                    (map parse-claim)
-                    (map get-range))]
-    
-    (loop [ranges ranges
-           overlap #{}]
+(defn part-two
+  ([] (part-two (slurp "./src/2018/day3/input.txt")))
+  ([input]
+   (let [claims (map parse-claim (s/split-lines input))
+         overlaps (->> claims
+                       (mapcat coordinates)
+                       frequencies)]
 
-      (if-let [[head & tail] ranges]
-        (let [result (->> tail 
-                       (map (partial get-overlap head))
-                       (reduce clojure.set/union))]
-
-          (recur tail (clojure.set/union overlap result)))
-
-        (do
-          ;; (println :overlap overlap)
-          (println :result (count overlap)))))))
-
-;; (part-one "./src/advent_2018/three/test-input.txt")
-(part-one "./src/advent_2018/three/input.txt")
-
+     (some (fn [claim]
+             (when (every? (fn [coordinate]
+                             (= 1 (get overlaps coordinate))) (coordinates claim))
+               (:id claim))) claims))))
+(comment
+(part-one example)
+(part-one)
+(part-two example)
+(part-two))
