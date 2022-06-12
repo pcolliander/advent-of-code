@@ -10,15 +10,12 @@
 
 (defn- parse-claim [claim]
   "a claim has the form: #123 @ 3,2: 5x4"
-  (let [[id _ left-and-top width-and-tall] (s/split claim #" ")
-      [inches-from-left inches-from-top] (s/split left-and-top #",") 
-      [inches-wide inches-tall] (s/split width-and-tall #"x")]
-
-  {:id id
-   :left (parse-long inches-from-left)
-   :top  (parse-long (s/replace inches-from-top  #":" ""))
-   :wide (parse-long inches-wide)
-   :tall (parse-long inches-tall)}))
+  (let [[_ id left top width tall] (re-find #"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)" claim)]
+    {:id id
+     :left (parse-long left)
+     :top  (parse-long top)
+     :wide (parse-long width)
+     :tall (parse-long tall)}))
 
 (defn- coordinates [{:keys [left top tall wide]}]
   (for [x (range left (+ left wide))
