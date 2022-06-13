@@ -30,8 +30,7 @@
                      (mapcat coordinates))]
      (->> ranges
          frequencies
-         vals
-         (filter #(< 1 %))
+         (filter (fn [[k v]] (< 1 v)))
          count))))
 
 (defn part-two
