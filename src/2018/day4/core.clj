@@ -31,9 +31,8 @@
                       (mapcat (fn [[slept-at wake-up-at]]
                                 (range (:minute slept-at) (:minute wake-up-at)))))))
        frequencies
-       (sort-by val )
-       last
-       first))
+       (sort-by val)
+       last))
 
 (defn- get-total-minutes-asleep [[guard actions]]
   [guard (->> actions
@@ -42,38 +41,48 @@
                         (+ acc (- (:minute wake-up-at) (:minute slept-at))))
                       0))])
 
+(defn- parse [line]
+  (let [[_ _ month day hour minute op] (re-find #"\[(\d+)-(\d+)-(\d+) (\d+):(\d+)\] (.*$)" line)]
+    {:month month
+     :day day
+     :minute (parse-long minute)
+     :op op}))
+
+(defn- get-actions-by-guard [lines]
+  (loop [lines lines
+         actions-by-guard {}]
+    (if-let [line (first lines)]
+      (let [[_ guard] (re-find #"#(\d+)" (:op line))
+            actions (->> (next lines) (take-while #(not (re-find #"#(\d+)" (:op %)))))]
+        (recur (drop-while #(not (re-find #"#(\d+)" (:op %))) (next lines))
+               (update actions-by-guard guard concat actions)))
+      actions-by-guard)))
+
 (defn part-one
   ([] (part-one (slurp "./src/2018/day4/input.txt")))
   ([input]
-   (let [lines (->> (s/split-lines input)
-                    sort
-                    (map (fn [line]
-                           (let [[_ _ month day hour minute op] (re-find #"\[(\d+)-(\d+)-(\d+) (\d+):(\d+)\] (.*$)" line)]
-                             {:month month
-                              :day day
-                              :minute (parse-long minute)
-                              :op op}))))
-
-         actions-by-guard (loop [lines lines
-                                 actions-by-guard {}]
-                            (if-let [line (first lines)]
-                              (let [[_ guard] (re-find #"#(\d+)" (:op line))
-                                    actions (->> (next lines) (take-while #(not (re-find #"#(\d+)" (:op %)))))]
-                                (recur (drop-while #(not (re-find #"#(\d+)" (:op %))) (next lines))
-                                       (update actions-by-guard guard concat actions)))
-                              actions-by-guard))
+   (let [lines (map parse (sort (s/split-lines input)))
+         actions-by-guard (get-actions-by-guard lines)
          guard-ids (keys actions-by-guard)
          [guard-id _] (->> actions-by-guard
                            (map get-total-minutes-asleep)
                            (sort-by second)
                            last)
-         most-minute-asleep (get-minute-asleep-most (get actions-by-guard guard-id))]
+         most-minute-asleep (-> (get-minute-asleep-most (get actions-by-guard guard-id)) first)]
      (* most-minute-asleep (parse-long guard-id)))))
 
 (defn part-two
   ([] (part-two (slurp "./src/2018/day4/input.txt")))
   ([input]
-   ))
+   (let [lines (map parse (sort (s/split-lines input)))
+         actions-by-guard (get-actions-by-guard lines)
+         guard-ids (keys actions-by-guard)
+         [guard-id [minute _]] (->> (for [id guard-ids
+                                          :let [most-asleep (get-minute-asleep-most (get actions-by-guard id))]]
+                                      [id most-asleep])
+                                    (sort-by #(-> % second second))
+                                    last)]
+     (* (parse-long guard-id) minute))))
 
 (comment
 (part-one example)
