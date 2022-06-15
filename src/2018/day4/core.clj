@@ -42,9 +42,8 @@
                       0))])
 
 (defn- parse [line]
-  (let [[_ _ month day hour minute op] (re-find #"\[(\d+)-(\d+)-(\d+) (\d+):(\d+)\] (.*$)" line)]
-    {:month month
-     :day day
+  (let [[_ _ _ day _ minute op] (re-find #"\[(\d+)-(\d+)-(\d+) (\d+):(\d+)\] (.*$)" line)]
+    {:day day
      :minute (parse-long minute)
      :op op}))
 
@@ -63,7 +62,6 @@
   ([input]
    (let [lines (map parse (sort (s/split-lines input)))
          actions-by-guard (get-actions-by-guard lines)
-         guard-ids (keys actions-by-guard)
          [guard-id _] (->> actions-by-guard
                            (map get-total-minutes-asleep)
                            (sort-by second)
@@ -76,8 +74,7 @@
   ([input]
    (let [lines (map parse (sort (s/split-lines input)))
          actions-by-guard (get-actions-by-guard lines)
-         guard-ids (keys actions-by-guard)
-         [guard-id [minute _]] (->> (for [id guard-ids
+         [guard-id [minute _]] (->> (for [id (keys actions-by-guard)
                                           :let [most-asleep (get-minute-asleep-most (get actions-by-guard id))]]
                                       [id most-asleep])
                                     (sort-by #(-> % second second))
