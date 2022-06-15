@@ -24,12 +24,9 @@
 
 (defn- get-minute-asleep-most [actions]
   (->> actions
-       (group-by :day)
-       (mapcat (fn [[k v]]
-                 (->> v
-                      (partition 2)
-                      (mapcat (fn [[slept-at wake-up-at]]
-                                (range (:minute slept-at) (:minute wake-up-at)))))))
+       (partition 2)
+       (mapcat (fn [[slept-at wake-up-at]]
+                 (range (:minute slept-at) (:minute wake-up-at))))
        frequencies
        (sort-by val)
        last))
@@ -42,9 +39,8 @@
                       0))])
 
 (defn- parse [line]
-  (let [[_ day minute op] (re-find #"\[\d+-\d+-(\d+) \d+:(\d+)\] (.*$)" line)]
-    {:day day
-     :minute (parse-long minute)
+  (let [[_ minute op] (re-find #"\[\d+-\d+-\d+ \d+:(\d+)\] (.*$)" line)]
+    {:minute (parse-long minute)
      :op op}))
 
 (defn- get-actions-by-guard [lines]
