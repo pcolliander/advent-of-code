@@ -42,7 +42,7 @@
                       0))])
 
 (defn- parse [line]
-  (let [[_ _ _ day _ minute op] (re-find #"\[(\d+)-(\d+)-(\d+) (\d+):(\d+)\] (.*$)" line)]
+  (let [[_ day minute op] (re-find #"\[\d+-\d+-(\d+) \d+:(\d+)\] (.*$)" line)]
     {:day day
      :minute (parse-long minute)
      :op op}))
