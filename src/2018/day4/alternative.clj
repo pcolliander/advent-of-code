@@ -30,35 +30,47 @@
       (let [[_ id] (re-find #"#(\d+)" op)]
        [:guard (parse-long id)]))))
 
-(let [lines (map parse (sort (s/split-lines (slurp "./src/2018/day4/input.txt") #_example) ))
-      intervals (loop [guard nil
-                        lines lines
-                        result nil
-                        asleep nil]
-                   (if (empty? lines)
-                     result
-                     (let [[op arg] (first lines)]
-                      (case op
-                         :guard  (recur arg (next lines) result nil)
-                         :asleep (recur guard (next lines) result arg)
-                         :awake  (recur guard (next lines) (conj result [guard asleep arg]) nil)))))
-      
-      [id _] (->> intervals
-                                 (reduce (fn [acc [guard asleep awake]]
-                                           (update acc guard #(+ (or % 0) (- awake asleep))))
+(def intervals
+  (let [lines (map parse (sort (s/split-lines (slurp "./src/2018/day4/input.txt"))))]
+    (loop [guard nil
+           lines lines
+           result nil
+           asleep nil]
+      (if (empty? lines)
+        result
+        (let [[op arg] (first lines)]
+          (case op
+            :guard  (recur arg (next lines) result nil)
+            :asleep (recur guard (next lines) result arg)
+            :awake  (recur guard (next lines) (conj result [guard asleep arg]) nil)))))))
 
-                                         {})
-                                 (sort-by second)
-                                 last)
+(defn- most-asleep-minute [intervals]
+  (->> intervals
+       (map (fn [[_ sleep-at wake-up]]
+              (into {}
+                    (for [minute (range sleep-at wake-up)]
+                      [minute 1] ))))
+       (apply merge-with +)
+       (sort-by second)
+       last))
 
-      [minute _] (->> intervals
-                                  (filter #(= id (first %)))
-                                  (map (fn [[_ sleep-at wake-up]]
-                                         (into {}
-                                               (for [minute (range sleep-at wake-up)]
-                                                 [minute 1] ))))
-                                  (apply merge-with +)
-                                  (sort-by second)
-                                  last)]
-  (* minute id))
+(defn- part-one []
+  (let [[id _] (->> intervals
+                    (reduce (fn [acc [guard asleep awake]]
+                              (update acc guard #(+ (or % 0) (- awake asleep))))
+                            {})
+                    (sort-by second)
+                    last)
+        [minute _] (most-asleep-minute (filter #(= id (first %)) intervals))]
+    (* minute id)))
+
+(defn- part-two []
+  (let [[guard [minute _]]  (->> intervals
+                                 (group-by first)
+                                 (map (fn [[guard actions]]
+                                        [guard (most-asleep-minute actions)]))
+                                 (sort-by #(-> % second second))
+                                 last)]
+    (* guard minute )))
+
 
