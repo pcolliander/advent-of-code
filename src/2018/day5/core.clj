@@ -10,7 +10,7 @@
       (= (s/upper-case u1) (str u2))
       (= (s/lower-case u1) (str u2)))))
 
-(defn- reduce-once [string]
+(defn- react-once [string]
   (loop [n 0 result []]
     (if-let [unit (nth string n nil)]
       (if-let [next-unit (nth string (inc n) nil)]
@@ -19,21 +19,30 @@
           (recur (inc n) (conj result unit)))
         (conj result unit)))))
 
+(defn- react-full [string]
+  (loop [prev string]
+    (let [result (react-once prev)]
+      (if (= result prev)
+        result
+        (recur result)))))
+
 (defn part-one
   ([] (part-one (slurp "./src/2018/day5/input.txt")))
   ([input]
-   (loop [prev input]
-     (let [result (reduce-once prev)]
-       (if (= result prev)
-         (count result)
-         (recur result ))))))
+   (count (react-full input))))
 
 (defn part-two
   ([] (part-two (slurp "./src/2018/day5/input.txt")))
-  ([input]))
+  ([input]
+   (let [types (->> (set input) (map s/lower-case) set)]
+     (->> (for [t types
+                :let [purged (s/replace input (re-pattern (str "(?i)" t)) "")
+                      reacted (react-full purged)]]
+            [t (count reacted)])
+          (sort-by second)))))
 
 (comment
 (part-one example)
-(part-one)) ; 2539
+(part-one) ; 2539
 (part-two example)
-(part-two))
+(time (part-two))) ; (out) "Elapsed time: 83755.613571 msecs"
