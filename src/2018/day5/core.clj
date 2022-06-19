@@ -10,7 +10,7 @@
       (= (s/upper-case u1) (str u2))
       (= (s/lower-case u1) (str u2)))))
 
-(defn- reduce-one [string]
+(defn- reduce-once [string]
   (loop [n 0 result []]
     (if-let [unit (nth string n nil)]
       (if-let [next-unit (nth string (inc n) nil)]
@@ -23,9 +23,9 @@
   ([] (part-one (slurp "./src/2018/day5/input.txt")))
   ([input]
    (loop [prev input]
-     (let [result (reduce-one prev)]
+     (let [result (reduce-once prev)]
        (if (= result prev)
-         (count (s/join result))
+         (count result)
          (recur result ))))))
 
 (defn part-two
@@ -34,6 +34,6 @@
 
 (comment
 (part-one example)
-(part-one)
+(part-one)) ; 2539
 (part-two example)
 (part-two))
