@@ -4,11 +4,10 @@
 
 (def example "dabAcCaCBAcCcaDA")
 
-(defn- unit-polarity? [u1 u2]
-  (let [lower-case? (= (str u1) (s/lower-case u1))]
-    (if lower-case?
-      (= (s/upper-case u1) (str u2))
-      (= (s/lower-case u1) (str u2)))))
+(defn- unit-polarity? [^Character u1 ^Character u2]
+  (if (Character/isLowerCase u1)
+    (= (Character/toUpperCase u1) u2)
+    (= (Character/toLowerCase u1) u2)))
 
 (defn- react-once [string]
   (loop [n 0 result []]
@@ -45,4 +44,4 @@
 (part-one example)
 (part-one) ; 2539
 (part-two example)
-(time (part-two))) ; (out) "Elapsed time: 83755.613571 msecs"
+(time (part-two))) ; (out) "Elapsed time: 32559.59491 msecs"
