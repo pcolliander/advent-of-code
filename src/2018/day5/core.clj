@@ -33,7 +33,7 @@
 (defn part-two
   ([] (part-two (slurp "./src/2018/day5/input.txt")))
   ([input]
-   (let [types (->> (set input) (map s/lower-case) set)]
+   (let [types (->> (seq input) (map s/lower-case) set)]
      (->> (for [t types
                 :let [purged (s/replace input (re-pattern (str "(?i)" t)) "")
                       reacted (react-full purged)]]
