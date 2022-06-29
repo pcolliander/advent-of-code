@@ -11,7 +11,7 @@
 8, 9")
 
 (defn- manhattan-distance [[x1 y1] [x2 y2]]
-  "x1 - x2 + y1 - y2"
+  "(x1 - x2) + (y1 - y2)"
   (+
    (abs (- x1 x2) )
    (abs (- y1 y2))))
@@ -40,17 +40,18 @@
     (and finite-left? finite-right? finite-up? finite-down?)))
 
 (defn- parse [input]
-  (->> (s/split-lines input)
-       (map (fn [line]
-              (let [[x y] (s/split line #", ")]
-                [(parse-long x) (parse-long y)])))))
+  (let [coordinates (->> (s/split-lines input)
+                         (map (fn [line]
+                                (let [[x y] (s/split line #", ")]
+                                  [(parse-long x) (parse-long y)]))))
+        max-x  (->> coordinates (map first) (apply max) inc)
+        max-y (->> coordinates (map second) (apply max) inc)]
+    [coordinates max-x max-y]))
 
 (defn part-one
   ([] (part-one (slurp "./src/2018/day6/input.txt")))
   ([input]
-   (let [coordinates (parse input)
-         max-x  (->> coordinates (map first) (apply max) inc)
-         max-y (->> coordinates (map second) (apply max) inc)
+   (let [[coordinates max-x max-y] (parse input)
          areas (for [x (range 0 max-x)
                      y (range 0 max-y)
                      :let [top-2 (->> (for [coordinate coordinates]
@@ -73,14 +74,11 @@
 (defn part-two
   ([] (part-two (slurp "./src/2018/day6/input.txt") 10000))
   ([input size]
-   (let [coordinates (parse input )
-         max-x  (->> coordinates (map first) (apply max) inc)
-         max-y (->> coordinates (map second) (apply max) inc)
+   (let [[coordinates max-x max-y] (parse input)
          areas (for [x (range 0 max-x)
                      y (range 0 max-y)
-                     :let [distances-total (->> (for [coordinate coordinates]
-                                                  (manhattan-distance coordinate [x y]))
-                                                (reduce +))]
+                     :let [distances-total (reduce + (for [coordinate coordinates]
+                                                       (manhattan-distance coordinate [x y])))]
                      :when (< distances-total size)]
                  [x y])]
      (count areas))))
