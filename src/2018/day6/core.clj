@@ -71,11 +71,22 @@
           second))))
 
 (defn part-two
-  ([] (part-one (slurp "./src/2018/day6/input.txt")))
-  ([input]))
+  ([] (part-two (slurp "./src/2018/day6/input.txt") 10000))
+  ([input size]
+   (let [coordinates (parse input )
+         max-x  (->> coordinates (map first) (apply max) inc)
+         max-y (->> coordinates (map second) (apply max) inc)
+         areas (for [x (range 0 max-x)
+                     y (range 0 max-y)
+                     :let [distances-total (->> (for [coordinate coordinates]
+                                                  (manhattan-distance coordinate [x y]))
+                                                (reduce +))]
+                     :when (< distances-total size)]
+                 [x y])]
+     (count areas))))
 
 (comment
 (part-one example)
 (part-one)
-(part-two example)
+(part-two example 32)
 (part-two))
