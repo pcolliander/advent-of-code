@@ -67,8 +67,7 @@
           (keep second)
           frequencies
           (filter #(finite? (first %) (into {} areas) coordinates max-x max-y))
-          (sort-by second)
-          last
+          (apply max-key second)
           second))))
 
 (defn part-two
