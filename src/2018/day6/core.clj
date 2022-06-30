@@ -41,9 +41,9 @@
 
 (defn- parse [input]
   (let [coordinates (->> (s/split-lines input)
-                         (map (fn [line]
-                                (let [[x y] (s/split line #", ")]
-                                  [(parse-long x) (parse-long y)]))))
+                         (map #(-> % (s/split #", ")
+                                   (->>
+                                     (mapv parse-long)))))
         max-x  (->> coordinates (map first) (apply max) inc)
         max-y (->> coordinates (map second) (apply max) inc)]
     [coordinates max-x max-y]))
