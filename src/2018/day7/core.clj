@@ -16,38 +16,43 @@ Step F must be finished before step E can begin.")
     [(keyword step) (keyword before-step)]))
 
 (defn parse [lines]
-  (let [lines (s/split-lines lines)
-        [start _] (parse-line (first lines))]
+  (let [lines (s/split-lines lines)]
     (loop [lines lines
-           order {}]
+           requirements {}
+           graph {}]
 
       (if (empty? lines)
-        [start order]
-        (let [[step before-step] (parse-line (first lines))]
+        [graph requirements]
+        (let [[requirement step] (parse-line (first lines))]
           (recur
             (next lines)
-            (update order step #(conj % before-step))))))))
+            (update requirements step #(conj % requirement))
+            (update graph requirement #(conj % step))))))))
+
+(defn- find-start [graph requirements]
+  (->> (keys graph)
+       (remove (fn [k]
+                 (contains? requirements k)))
+       sort))
 
 (defn- ready? [requirements order instruction]
-  (let [requirements-left (flatten (vals (apply dissoc requirements (set order))))]
-    (when-not (some #{instruction} requirements-left)
-      instruction)))
-
-
+  (when (cs/superset? (set order) (instruction requirements))
+    instruction))
 
 (defn part-one
   ([] (part-one (slurp "./src/2018/day7/input.txt")))
   ([input]
-   (let [[start requirements] (parse input)]
-     (loop [instructions (sort (start requirements))
-            order [start]]
-
+   (let [[graph requirements] (parse input)
+         start-nodes (sort (find-start graph requirements))
+         [start-node & r] start-nodes]
+     (loop [instructions (sort (concat (start-node graph) r))
+            order [start-node]]
        (if (empty? instructions)
-         order
+         (s/join (map name order))
          (let [instr (some #(ready? requirements order %) instructions)
                new-order (conj order instr)]
            (recur
-             (->> (concat instructions (instr requirements))
+             (->> (concat instructions (instr graph))
                   (remove (set new-order))
                   sort)
              new-order)))))))
