@@ -49,14 +49,73 @@ Step F must be finished before step E can begin.")
             order [start-node]]
        (if (empty? instructions)
          (s/join (map name order))
-         (let [instr (some #(ready? requirements order %) instructions)
-               new-order (conj order instr)]
+         (let [instruction (some #(ready? requirements order %) instructions)
+               new-order (conj order instruction)]
            (recur
-             (->> (concat instructions (instr graph))
+             (->> (concat instructions (instruction graph))
                   (remove (set new-order))
                   sort)
              new-order)))))))
 
+(def step-time
+  (reduce (fn [a i]
+            (assoc a (keyword (str (char (+ (int \A) i)))) (inc i)))
+          {}
+          (range 0 26)))
+
+(defn- task-time [node]
+  (+ 60 (step-time node)))
+
+(defn- worker-ready? [[_ time-left]]
+  (zero? time-left))
+
+(defn part-two
+  ([] (part-two (slurp "./src/2018/day7/input.txt") 5))
+  ([input workn]
+   (let [[graph requirements] (parse input)
+         start-nodes (sort (find-start graph requirements))
+         workers (map (fn [node]
+                        [node (task-time node)])
+                      start-nodes)]
+
+     (loop [instructions []
+            order []
+            seconds 0
+            workers workers]
+       (if (and
+             (empty? instructions)
+             (zero? (count workers)))
+         [seconds (s/join (map name order))]
+         (let [workers' (mapv (fn [[letter time-left]]
+                                [letter (max 0 (dec time-left))]) workers)
+               finished-workers (filter worker-ready? workers')
+               order' (concat order (map first finished-workers))
+               instructions' (->> finished-workers
+                                  (mapcat (fn [[instruction _]]
+                                            (instruction graph)))
+                                  (concat instructions)
+                                  distinct
+                                  sort
+                                  (remove (set order')))
+
+               workers'' (reduce (fn [a instruction]
+                                   (let [ready (ready? requirements order' instruction)]
+                                     (if (and ready (< (count a) workn))
+                                       (conj a [ready (task-time ready)])
+                                       a)))
+                                 (filterv (complement worker-ready?) workers')
+                                 instructions') 
+
+               instructions'' (remove (set (map first workers'')) instructions')]
+
+           (recur
+             instructions''
+             order'
+             (inc seconds)
+             (filter (complement worker-ready?) workers''))))))))
+
 (comment
 (part-one example)
-(part-one))
+(part-one)
+(part-two example 2)
+(part-two))
