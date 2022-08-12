@@ -87,7 +87,7 @@ Step F must be finished before step E can begin.")
              (zero? (count workers)))
          [seconds (s/join (map name order))]
          (let [workers' (mapv (fn [[letter time-left]]
-                                [letter (max 0 (dec time-left))]) workers)
+                                [letter (dec time-left)]) workers)
                finished-workers (filter worker-ready? workers')
                order' (concat order (map first finished-workers))
                instructions' (->> finished-workers
