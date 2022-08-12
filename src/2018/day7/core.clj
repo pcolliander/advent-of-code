@@ -89,28 +89,25 @@ Step F must be finished before step E can begin.")
          (let [workers' (mapv (fn [[letter time-left]]
                                 [letter (dec time-left)]) workers)
                finished-workers (filter worker-ready? workers')
-               order' (concat order (map first finished-workers))
+               new-order (concat order (map first finished-workers))
                instructions' (->> finished-workers
                                   (mapcat (fn [[instruction _]]
                                             (instruction graph)))
                                   (concat instructions)
                                   distinct
                                   sort
-                                  (remove (set order')))
+                                  (remove (set new-order)))
 
                workers'' (reduce (fn [a instruction]
-                                   (let [ready (ready? requirements order' instruction)]
+                                   (let [ready (ready? requirements new-order instruction)]
                                      (if (and ready (< (count a) workn))
                                        (conj a [ready (task-time ready)])
                                        a)))
                                  (filterv (complement worker-ready?) workers')
-                                 instructions') 
-
-               instructions'' (remove (set (map first workers'')) instructions')]
-
+                                 instructions')]
            (recur
-             instructions''
-             order'
+             (remove (set (map first workers'')) instructions')
+             new-order
              (inc seconds)
              (filter (complement worker-ready?) workers''))))))))
 
