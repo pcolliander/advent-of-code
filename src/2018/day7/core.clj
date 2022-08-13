@@ -77,9 +77,7 @@ Step F must be finished before step E can begin.")
             order []
             seconds 0
             workers workers]
-       (if (and
-             (empty? instructions)
-             (zero? (count workers)))
+       (if (and (empty? instructions) (zero? (count workers)))
          [seconds (s/join (map name order))]
          (let [workers' (map (fn [[letter time-left]]
                                 [letter (dec time-left)]) workers)
@@ -99,7 +97,7 @@ Step F must be finished before step E can begin.")
              (cs/difference new-instructions (set (map first workers'')))
              new-order
              (inc seconds)
-             (filter (complement worker-ready?) workers''))))))))
+             workers'')))))))
 
 (comment
 (part-one example)
