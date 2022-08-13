@@ -15,19 +15,19 @@ Step F must be finished before step E can begin.")
   (let [[[_ step before-step]] (re-seq #"Step ([A-Z]).* step ([A-Z])" line)]
     [(keyword step) (keyword before-step)]))
 
-(defn parse [lines]
+(defn- parse [lines]
   (let [lines (s/split-lines lines)]
     (loop [lines lines
            requirements {}
            graph {}]
-
       (if (empty? lines)
         [graph requirements]
-        (let [[requirement step] (parse-line (first lines))]
+        (let [[before after] (parse-line (first lines))]
+
           (recur
             (next lines)
-            (update requirements step #(conj % requirement))
-            (update graph requirement #(conj % step))))))))
+            (assoc requirements after (conj (requirements after (sorted-set)) before))
+            (assoc graph before (conj (graph before (sorted-set)) after))))))))
 
 (defn- find-start [graph requirements]
   (->> (keys graph)
@@ -43,18 +43,16 @@ Step F must be finished before step E can begin.")
   ([] (part-one (slurp "./src/2018/day7/input.txt")))
   ([input]
    (let [[graph requirements] (parse input)
-         start-nodes (sort (find-start graph requirements))
+         start-nodes (find-start graph requirements)
          [start-node & r] start-nodes]
-     (loop [instructions (sort (concat (start-node graph) r))
+     (loop [instructions (apply sorted-set (concat (start-node graph) r))
             order [start-node]]
        (if (empty? instructions)
          (s/join (map name order))
          (let [instruction (some #(ready? requirements order %) instructions)
                new-order (conj order instruction)]
            (recur
-             (->> (concat instructions (instruction graph))
-                  (remove (set new-order))
-                  sort)
+             (cs/difference (apply conj instructions (instruction graph)) (set new-order))
              new-order)))))))
 
 (def step-time
