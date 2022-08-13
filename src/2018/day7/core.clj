@@ -71,12 +71,9 @@ Step F must be finished before step E can begin.")
   ([] (part-two (slurp "./src/2018/day7/input.txt") 5))
   ([input workn]
    (let [[graph requirements] (parse input)
-         start-nodes (sort (find-start graph requirements))
-         workers (map (fn [node]
-                        [node (task-time node)])
-                      start-nodes)]
-
-     (loop [instructions []
+         start-nodes (find-start graph requirements)
+         workers (map #(vector % (task-time %)) start-nodes)]
+     (loop [instructions (sorted-set)
             order []
             seconds 0
             workers workers]
@@ -84,27 +81,22 @@ Step F must be finished before step E can begin.")
              (empty? instructions)
              (zero? (count workers)))
          [seconds (s/join (map name order))]
-         (let [workers' (mapv (fn [[letter time-left]]
+         (let [workers' (map (fn [[letter time-left]]
                                 [letter (dec time-left)]) workers)
                finished-workers (filter worker-ready? workers')
                new-order (concat order (map first finished-workers))
-               instructions' (->> finished-workers
-                                  (mapcat (fn [[instruction _]]
-                                            (instruction graph)))
-                                  (concat instructions)
-                                  distinct
-                                  sort
-                                  (remove (set new-order)))
-
+               new-instructions (apply conj instructions (cs/difference (set (mapcat (fn [[instruction _]]
+                                                                                       (instruction graph)) finished-workers))
+                                                                        (set new-order)))
                workers'' (reduce (fn [a instruction]
                                    (let [ready (ready? requirements new-order instruction)]
                                      (if (and ready (< (count a) workn))
                                        (conj a [ready (task-time ready)])
                                        a)))
                                  (filterv (complement worker-ready?) workers')
-                                 instructions')]
+                                 new-instructions)]
            (recur
-             (remove (set (map first workers'')) instructions')
+             (cs/difference new-instructions (set (map first workers'')))
              new-order
              (inc seconds)
              (filter (complement worker-ready?) workers''))))))))
