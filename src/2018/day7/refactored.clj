@@ -12,11 +12,12 @@ Step D must be finished before step E can begin.
 Step F must be finished before step E can begin.")
 
 (defn parse-line [line]
-  (let [[[_ step before-step]] (re-seq #"Step ([A-Z]).* step ([A-Z])" line)]
+  (let [[_ step before-step] (re-matches #"Step ([A-Z]) must be finished before step ([A-Z]) can begin." line) ]
     [step before-step]))
 
-(defn- parse-requirements [lines]
-  (let [steps (set (concat (map first lines) (map second lines)))]
+(defn- parse [input]
+  (let [lines (map parse-line (s/split-lines input))
+        steps (set (concat (map first lines) (map second lines)))]
     (merge
       (into {} (->> steps (map (fn [s]
                                  [s #{}])) (into {})))
@@ -25,23 +26,12 @@ Step F must be finished before step E can begin.")
               {}
               lines))))
 
-(parse-requirements (map parse-line (s/split-lines example)))
-
-(defn- find-start [requirements all-keys]
-  (->> all-keys
-       set
-       (remove #(contains? requirements %))
-       sort))
-
 (defn part-one
   ([] (part-one (slurp "./src/2018/day7/input.txt")))
   ([input]
-   (let [lines (map parse-line (s/split-lines input))
-         requirements (parse-requirements lines)]
+   (let [requirements (parse input)]
      (loop [requirements requirements
             order []]
-       (println :requirements requirements)
-       (println :order order)
        (if (empty? requirements)
          (s/join order)
          (let [requirements' (into {} (map (fn [[k v]]
@@ -52,39 +42,10 @@ Step F must be finished before step E can begin.")
            (recur
              (dissoc requirements' next-item)
              (conj order next-item))))))))
-
-(comment
-  (let [input #_(slurp "./src/2018/day7/input.txt") example
-        lines (map parse-line (s/split-lines input))
-        steps (set (concat (map first lines) (map second lines)))
-        reqs (merge
-               (->> steps (map (fn [s]
-                                 [s #{}])) (into {}))
-               (reduce (fn [a [before after]]
-                         (assoc a after (conj (a after (sorted-set)) before)))
-                       {}
-                       lines))]
-    (loop [reqs reqs
-           res ""]
-      (if (empty? reqs)
-        res
-        (let [open (->> reqs (filter #(empty? (second %))) (map first))
-              go-with (first (sort open))
-              reqs' (into {}
-                          (for [[k vals] reqs]
-                            [k (disj vals go-with)]))]
-          (recur (dissoc reqs' go-with) (str res go-with)))))))
-
-
-(comment
-(part-one example)
-(part-one)
-)
                  
- (defn- ready? [requirements order instruction]
+(defn- ready? [requirements order instruction]
   (when (cs/superset? (set order) (instruction requirements))
     instruction))
-                 
 
 (def step-time
   (reduce (fn [a i]
@@ -98,6 +59,12 @@ Step F must be finished before step E can begin.")
 (defn- worker-ready? [[_ time-left]]
   (zero? time-left))
 
+(defn- find-start [requirements all-keys]
+  (->> all-keys
+       set
+       (remove #(contains? requirements %))
+       sort))
+             
 (defn part-two
   ([] (part-two (slurp "./src/2018/day7/input.txt") 5))
   ([input workn]
@@ -134,6 +101,4 @@ Step F must be finished before step E can begin.")
 (part-one example)
 (part-one)
 (part-two example 2)
-
-
-  (part-two))
+(part-two))
