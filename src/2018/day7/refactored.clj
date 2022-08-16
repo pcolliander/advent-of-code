@@ -31,17 +31,20 @@ Step F must be finished before step E can begin.")
   ([input]
    (let [requirements (parse input)]
      (loop [requirements requirements
-            order []]
+            order ""]
        (if (empty? requirements)
          (s/join order)
-         (let [requirements' (into {} (map (fn [[k v]]
-                                             [k (disj v (last order))])
-                                           requirements))
-               open (->> requirements' (filter #(empty? (second %))) (map first))
-               next-item (first (sort open))]
+         (let [next-instruction (->> requirements
+                                     (filter #(empty? (second %)))
+                                     (map first)
+                                     sort
+                                     first)
+               requirements' (into {} (map (fn [[k v]]
+                                             [k (disj v next-instruction)])
+                                           requirements))]
            (recur
-             (dissoc requirements' next-item)
-             (conj order next-item))))))))
+             (dissoc requirements' next-instruction)
+             (str order next-instruction))))))))
                  
 (defn- ready? [requirements order instruction]
   (when (cs/superset? (set order) (instruction requirements))
