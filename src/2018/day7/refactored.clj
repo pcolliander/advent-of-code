@@ -56,7 +56,6 @@ Step F must be finished before step E can begin.")
   ([] (part-two (slurp "./src/2018/day7/input.txt") 5))
   ([input workn]
    (loop [requirements (parse input)
-          order ""
           seconds 0
           workers []]
      (let [{finished false active true} (->> (for [[letter time-left] workers]
@@ -67,9 +66,10 @@ Step F must be finished before step E can begin.")
                                      [k (apply disj v (map first finished))]))
                               (into {}))
            available-requirements (->> requirements'
-                                       (filter #(empty? (second %)))
                                        (remove (fn [[instruction reqs]]
-                                                 (contains? (set (map first active)) instruction)))
+                                                 (or
+                                                   (seq reqs)
+                                                   (some #{instruction} (map first active)))))
                                        (map first))
            workers' (reduce (fn [a req]
                               (if (>= (count a) workn)
@@ -78,10 +78,9 @@ Step F must be finished before step E can begin.")
                             active
                             available-requirements)]
        (if (empty? requirements')
-         [seconds order]
+         seconds
          (recur
            requirements'
-           (str order (s/join (sort (map first finished))))
            (inc seconds)
            workers'))))))
 
