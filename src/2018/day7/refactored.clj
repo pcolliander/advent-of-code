@@ -52,12 +52,12 @@ Step F must be finished before step E can begin.")
 
 (def step-time
   (reduce (fn [a i]
-            (assoc a (keyword (str (char (+ (int \A) i)))) (inc i)))
+            (assoc a (str (char (+ (int \A) i))) (inc i)))
           {}
           (range 0 26)))
 
 (defn- task-time [node]
-  (+ 60 (step-time node)))
+  (+ 0 60 (step-time node)))
 
 (defn- worker-ready? [[_ time-left]]
   (zero? time-left))
@@ -71,34 +71,45 @@ Step F must be finished before step E can begin.")
 (defn part-two
   ([] (part-two (slurp "./src/2018/day7/input.txt") 5))
   ([input workn]
-   (let [[graph requirements] (parse input)
-         start-nodes (find-start graph requirements)
-         workers (map #(vector % (task-time %)) start-nodes)]
-     (loop [instructions (sorted-set)
-            order []
-            seconds 0
-            workers workers]
-       (if (and (empty? instructions) (zero? (count workers)))
-         [seconds (s/join (map name order))]
-         (let [workers' (map (fn [[letter time-left]]
-                                [letter (dec time-left)]) workers)
-               finished-workers (filter worker-ready? workers')
-               new-order (concat order (map first finished-workers))
-               new-instructions (apply conj instructions (cs/difference (set (mapcat (fn [[instruction _]]
-                                                                                       (instruction graph)) finished-workers))
-                                                                        (set new-order)))
-               workers'' (reduce (fn [a instruction]
-                                   (let [ready (ready? requirements new-order instruction)]
-                                     (if (and ready (< (count a) workn))
-                                       (conj a [ready (task-time ready)])
-                                       a)))
-                                 (filterv (complement worker-ready?) workers')
-                                 new-instructions)]
-           (recur
-             (cs/difference new-instructions (set (map first workers'')))
-             new-order
-             (inc seconds)
-             workers'')))))))
+   (loop [requirements (parse input)
+          order ""
+          seconds -1
+          workers []]
+
+     (if (empty? requirements)
+       [seconds order]
+       (let [workers' (map (fn [[letter time-left]]
+                             [letter (dec time-left)]) workers)
+             finished-requirements (->> workers'
+                                        (filter worker-ready?)
+                                        (map first))
+             unfinished-workers (filter (complement worker-ready?) workers')
+             requirements' (into {} (map (fn [[k v]]
+                                           [k (apply disj v finished-requirements)])
+                                         requirements))
+             new-order (str order (s/join finished-requirements))
+             available-requirements (cs/difference (->> requirements'
+                                                        (filter #(empty? (second %)))
+                                                        (map first)
+                                                        set)
+                                                   (set (map str new-order)))
+             workers'' (reduce (fn [a req]
+                                 (if (and
+                                       (<= (count a) workn)
+                                       (empty? (filter (fn [[l t]]
+                                                         (= l req)) unfinished-workers)))
+                                   (conj a [req (task-time req)])
+                                   a))
+                                 unfinished-workers
+                                 available-requirements)]
+         (recur
+           (reduce (fn [a r]
+                     (dissoc a r))
+                   requirements' 
+                   finished-requirements)
+           new-order
+           (inc seconds)
+           workers''))))))
 
 (comment
 (part-one example)
