@@ -46,70 +46,44 @@ Step F must be finished before step E can begin.")
              (dissoc requirements' next-instruction)
              (str order next-instruction))))))))
                  
-(defn- ready? [requirements order instruction]
-  (when (cs/superset? (set order) (instruction requirements))
-    instruction))
-
 (def step-time
   (reduce (fn [a i]
-            (assoc a (str (char (+ (int \A) i))) (inc i)))
+            (assoc a (str (char (+ (int \A) i))) (+ 60 (inc i))))
           {}
           (range 0 26)))
 
-(defn- task-time [node]
-  (+ 0 60 (step-time node)))
-
-(defn- worker-ready? [[_ time-left]]
-  (zero? time-left))
-
-(defn- find-start [requirements all-keys]
-  (->> all-keys
-       set
-       (remove #(contains? requirements %))
-       sort))
-             
 (defn part-two
   ([] (part-two (slurp "./src/2018/day7/input.txt") 5))
   ([input workn]
    (loop [requirements (parse input)
           order ""
-          seconds -1
+          seconds 0
           workers []]
-
-     (if (empty? requirements)
-       [seconds order]
-       (let [workers' (map (fn [[letter time-left]]
-                             [letter (dec time-left)]) workers)
-             finished-requirements (->> workers'
-                                        (filter worker-ready?)
-                                        (map first))
-             unfinished-workers (filter (complement worker-ready?) workers')
-             requirements' (into {} (map (fn [[k v]]
-                                           [k (apply disj v finished-requirements)])
-                                         requirements))
-             new-order (str order (s/join finished-requirements))
-             available-requirements (cs/difference (->> requirements'
-                                                        (filter #(empty? (second %)))
-                                                        (map first)
-                                                        set)
-                                                   (set (map str new-order)))
-             workers'' (reduce (fn [a req]
-                                 (if (and
-                                       (<= (count a) workn)
-                                       (empty? (filter (fn [[l t]]
-                                                         (= l req)) unfinished-workers)))
-                                   (conj a [req (task-time req)])
-                                   a))
-                                 unfinished-workers
-                                 available-requirements)]
+     (let [{finished false active true} (->> (for [[letter time-left] workers]
+                                               [letter (dec time-left)])
+                                             (group-by (comp pos? second)))
+           requirements' (->> (apply dissoc requirements (map first finished))
+                              (map (fn [[k v]]
+                                     [k (apply disj v (map first finished))]))
+                              (into {}))
+           available-requirements (->> requirements'
+                                       (filter #(empty? (second %)))
+                                       (remove (fn [[instruction reqs]]
+                                                 (contains? (set (map first active)) instruction)))
+                                       (map first))
+           workers' (reduce (fn [a req]
+                              (if (>= (count a) workn)
+                                (reduced a)
+                                (conj a [req (step-time req)])))
+                            active
+                            available-requirements)]
+       (if (empty? requirements')
+         [seconds order]
          (recur
-           (reduce (fn [a r]
-                     (dissoc a r))
-                   requirements' 
-                   finished-requirements)
-           new-order
+           requirements'
+           (str order (s/join (sort (map first finished))))
            (inc seconds)
-           workers''))))))
+           workers'))))))
 
 (comment
 (part-one example)
