@@ -54,29 +54,27 @@ Step F must be finished before step E can begin.")
 
 (defn part-two
   ([] (part-two (slurp "./src/2018/day7/input.txt") 5))
-  ([input workn]
+  ([input n]
    (loop [requirements (parse input)
           seconds 0
           workers []]
-     (let [{finished false active true} (->> (for [[letter time-left] workers]
-                                               [letter (dec time-left)])
-                                             (group-by (comp pos? second)))
-           requirements' (->> (apply dissoc requirements (map first finished))
-                              (map (fn [[k v]]
-                                     [k (apply disj v (map first finished))]))
-                              (into {}))
+     (let [{finished false active true} (group-by (comp pos? second)
+                                                  (for [[letter time-left] workers]
+                                                    [letter (dec time-left)]))
+           requirements' (into {}
+                               (map (fn [[k v]]
+                                      [k (apply disj v (map first finished))])
+                                    (apply dissoc requirements (map first finished))))
            available-requirements (->> requirements'
                                        (remove (fn [[instruction reqs]]
                                                  (or
                                                    (seq reqs)
                                                    (some #{instruction} (map first active)))))
                                        (map first))
-           workers' (reduce (fn [a req]
-                              (if (>= (count a) workn)
-                                (reduced a)
-                                (conj a [req (step-time req)])))
-                            active
-                            available-requirements)]
+           workers' (->> (take (- n (count active)) available-requirements)
+                         (reduce #(conj %1 [%2 (step-time %2)])
+                                 active))]
+
        (if (empty? requirements')
          seconds
          (recur
