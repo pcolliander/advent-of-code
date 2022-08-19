@@ -12,13 +12,10 @@
              metadata []]
         (if (zero? children-left)
           (conj metadata (take metadata-n remaining))
-          (let [new-meta (parse-node remaining)]
+          (let [new-meta (parse-node remaining)
+                length-of-children (reduce + (map (comp (partial + 2) count) new-meta))]
             (recur (dec children-left)
-                   (drop (reduce (fn [a v]
-                                   (+ a 2 (count v)))
-                                 0
-                                 new-meta)
-                                 remaining)
+                   (drop length-of-children remaining)
                    (concat metadata new-meta))))))))
 
 (defn part-one
