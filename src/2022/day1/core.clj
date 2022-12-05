@@ -18,16 +18,10 @@
 10000")
 
 (defn- parse [input]
-  (loop [lines (string/split-lines input)
-         elves []]
-    (if (pos? (count lines))
-      (let [elf (->> lines
-                     (take-while not-empty)
-                     (map parse-long)
-                     (reduce +))]
-        (recur (drop-while string/blank? (drop-while not-empty lines))
-               (conj elves elf)))
-      elves)))
+  (->> (string/split input #"\n\n")
+       (map string/split-lines)
+       (map #(map parse-long %))
+       (map #(reduce + %))))
 
 (defn part-one
   ([]  (part-one (slurp "./src/2022/day1/input.txt")))
