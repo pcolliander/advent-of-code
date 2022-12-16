@@ -1,5 +1,6 @@
 (ns advent-of-code-2021.core
-   (:require [clojure.string :as string]))
+   (:require [clojure.string :as string]
+             [clojure.set :as s]))
 
 (def example 
 "A Y
@@ -22,11 +23,22 @@ C Z
    :B :X
    :C :Y})
 
+(def loses-to
+  {:A :Y
+   :B :Z
+   :C :X})
+
 (defn- play [[opponent you]]
   (cond
     (= (equivalent opponent) you) (+ (get scores you) 3)
     (= (get beats opponent) you) (get scores you)
     :else (+ (get scores you) 6)))
+
+(defn- play-v2 [[opponent you]]
+  (case you
+    :X (+ (get scores (get beats opponent)))
+    :Y (+ (get scores (get equivalent opponent)) 3)
+    :Z (+ (get scores (get loses-to opponent)) 6)))
 
 (defn- parse [input]
   (->> (string/split-lines input)
@@ -41,7 +53,7 @@ C Z
 (defn part-two
   ([]  (part-two (slurp "./src/2022/day2/input.txt")))
   ([input]
-   (reduce + (take 3 (reverse (sort (parse input)))))))
+   (apply + (map play-v2 (parse input)))))
 
 (comment
 (part-one example)
