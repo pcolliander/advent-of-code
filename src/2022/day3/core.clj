@@ -25,12 +25,8 @@ CrZsJsPPZsGzwwsLwLmpwMDw
 (defn- parse-compartments [input]
   (->> (string/split-lines input)
        (map (fn [s]
-              [(apply str (take (/ (count s) 2) s))
-               (apply str (drop (/ (count s) 2) s))]))))
-
-(defn- parse-bags [input]
-  (->> (string/split-lines input)
-       (partition 3)))
+              (map #(map str %) (split-at (/ (count s) 2) s))))
+       (map #(map string/join %))))
 
 (defn part-one
   ([]  (part-one (slurp "./src/2022/day3/input.txt")))
@@ -43,7 +39,7 @@ CrZsJsPPZsGzwwsLwLmpwMDw
 (defn part-two
   ([]  (part-two (slurp "./src/2022/day3/input.txt")))
   ([input]
-   (->> (parse-bags input)
+   (->> (partition 3 (string/split-lines input))
         (mapcat overlapping')
         (map #(get priorities %))
         (reduce +))))
