@@ -1,4 +1,4 @@
-(ns advent-of-code-2021.core
+(ns advent-of-code-2022.core
    (:require [clojure.string :as string]
              [clojure.set :as s]))
 
