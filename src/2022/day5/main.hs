@@ -6,7 +6,7 @@ import Text.Regex.Posix
 toInt :: [String] -> [Int]
 toInt = map read
 
-parseStacks stacks = map (filter (/= "")) $ transpose $ map (map (\ (_:_:match:_) -> match) . (\x -> x =~ regex :: [[String]])) $ init $ lines stacks
+parseStacks stacks =  zip [1..] $ map (filter (/= "")) $ transpose $ map (map (\ (_:_:match:_) -> match) . (\x -> x =~ regex :: [[String]])) $ init $ lines stacks
   where regex =  "(\\[(\\w)\\]| ( ) ) ?"
 
 parseInstruction :: String -> [Int]
@@ -29,15 +29,29 @@ applyInstruction instruction acc numberedStack
         items = take quantity $ snd $ nth from acc
         (nr, stack) = numberedStack
 
+applyInstruction' :: [Int] -> [(Int, [String])] -> (Int, [String]) -> (Int, [String])
+applyInstruction' instruction acc numberedStack
+  | nr == from = (nr, drop quantity stack)
+  | nr == to   = (nr, items ++ stack)
+  | otherwise  = numberedStack
+  where (quantity: from: to:_) = instruction
+        items = take quantity $ snd $ nth from acc
+        (nr, stack) = numberedStack
+
+part1 :: String -> String
 part1 input = intercalate "" $ map (head . snd) finalStacks
   where (stacks,instructions) = parse input
-        numberedStacks = zip [1..] stacks
-        finalStacks = foldl (\acc instruction -> map (applyInstruction instruction acc) acc) numberedStacks instructions 
+        finalStacks = foldl (\acc instruction -> map (applyInstruction instruction acc) acc) stacks instructions 
+
+part2 :: String -> String
+part2 input = intercalate "" $ map (head . snd) finalStacks
+  where (stacks,instructions) = parse input
+        finalStacks = foldl (\acc instruction -> map (applyInstruction' instruction acc) acc) stacks instructions 
 
 main = do  
   example <- readFile "example.txt"
   input <- readFile "input.txt"
   print $ part1 example
   print $ part1 input
-  -- print $ part2 example
-  -- print $ part2 input        
+  print $ part2 example
+  print $ part2 input        
