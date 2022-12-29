@@ -26,9 +26,8 @@ part2 input = startOfMessage 0 $ parse input
 
 main = do  
   example <- readFile "example.txt"
-  example2 <- readFile "example2.txt"
   input <- readFile "input.txt"
   print $ part1 example
   print $ part1 input
-  print $ part2 example2
+  print $ part2 example
   print $ part2 input        
