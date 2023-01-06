@@ -32,18 +32,26 @@ $ ls
     (string/replace #"\n" " ")
     (string/split #" " )))
                     
+(defn filepath [dir]
+  (str "/" (string/join "/" dir)))
+
 (defn- process [n]
   (loop [commands n
          filesystem {}
-         dir '()]
-    (let [[command tail] (split-with #(not= % "$") (next commands))]
+         dir []]
+    (let [[command tail] (split-with #(not= % "$") (next commands))
+          filepath (filepath (next dir))]
       (if (seq command)
         (case (first command)
           "cd" (case (second command)
                  ".." (recur tail filesystem (pop dir))
-                 "/"  (recur tail filesystem '("/"))
+                 "/"  (recur tail filesystem ["/"])
                  (recur tail filesystem (conj dir (second command))))
-          "ls"   (recur tail (assoc filesystem (first dir) (partition 2 (next command))) dir))
+          "ls"   (recur tail (assoc filesystem filepath
+                                    (->> (next command) (partition 2) (map (fn [[f s]]
+                                                                             (if (= f "dir")
+                                                                               [f (str filepath "/" s)]
+                                                                               [f s]))))) dir))
         filesystem))))
 
 (defn- size [filesystem [f s]]
@@ -56,10 +64,10 @@ $ ls
     (reduce-kv (fn [acc k v]
                (assoc acc k (map (partial size filesystem) v)))
              {})
-    (map second)
+    vals
     (map (comp (partial reduce +) flatten))
-    (filter (partial >= 100000))
-    (reduce +)))
+    (filterv (partial >= 100000))
+    (reduce + 0)))
 
 (defn part-one
   ([] (part-one (slurp "./src/2022/day7/input.txt")))
