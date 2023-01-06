@@ -59,10 +59,12 @@ $ ls
     (parse-long f)))
 
 (defn- filesystem-with-size [filesystem]
-  (->> filesystem
-    (reduce-kv (fn [acc k v]
-               (assoc acc k (map (partial size filesystem) v)))
-             {})))
+  (reduce-kv (fn [acc k v]
+               (assoc acc k (->> v
+                                 (map (partial size filesystem))
+                                 flatten 
+                                 (reduce +))))
+             {} filesystem))
 
 (defn part-one
   ([] (part-one (slurp "./src/2022/day7/input.txt")))
@@ -70,24 +72,19 @@ $ ls
    (let [filesystem (-> input parse process)]
      (->> (filesystem-with-size filesystem)
           vals
-          (map (comp (partial reduce +) flatten))
           (filter (partial >= 100000))
-          (reduce + 0)))))
+          (reduce +)))))
 
 (defn part-two
   ([] (part-two (slurp "./src/2022/day7/input.txt")))
   ([input]
    (let [filesystem-with-sz (-> input parse process filesystem-with-size)
-         total-used (apply max (->> filesystem-with-sz vals (map (comp (partial reduce +) flatten))))
+         total-used (apply max (vals filesystem-with-sz))
          unused-space (- 70000000 total-used)
          needed-space (- 30000000 unused-space)]
 
      (->> filesystem-with-sz
-          (reduce (fn [acc [path sizes]]
-                    (into acc [[path (apply + (flatten sizes))]]))
-                  {})
-          (map identity)
-          (sort-by second)
+          (sort-by (comp second vec))
           (drop-while (fn [[f s]]
                         (<= s needed-space)))
           (first)
