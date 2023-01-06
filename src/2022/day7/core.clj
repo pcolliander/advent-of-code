@@ -33,24 +33,23 @@ $ ls
     (string/split #" " )))
                     
 (defn filepath [dir]
-  (str "/" (string/join "/" dir)))
+  (str "/" (string/join "/" (next dir))))
 
 (defn- process [n]
   (loop [commands n
          filesystem {}
          dir []]
-    (let [[command tail] (split-with #(not= % "$") (next commands))
-          filepath (filepath (next dir))]
+    (let [[command tail] (split-with #(not= % "$") (next commands))]
       (if (seq command)
         (case (first command)
           "cd" (case (second command)
                  ".." (recur tail filesystem (pop dir))
                  "/"  (recur tail filesystem ["/"])
                  (recur tail filesystem (conj dir (second command))))
-          "ls"   (recur tail (assoc filesystem filepath
+          "ls"   (recur tail (assoc filesystem (filepath dir)
                                     (->> (next command) (partition 2) (map (fn [[f s]]
                                                                              (if (= f "dir")
-                                                                               [f (str filepath "/" s)]
+                                                                               [f (filepath (conj dir s))]
                                                                                [f s]))))) dir))
         filesystem))))
 
@@ -63,20 +62,40 @@ $ ls
   (->> filesystem
     (reduce-kv (fn [acc k v]
                (assoc acc k (map (partial size filesystem) v)))
-             {})
-    vals
-    (map (comp (partial reduce +) flatten))
-    (filterv (partial >= 100000))
-    (reduce + 0)))
+             {})))
 
 (defn part-one
   ([] (part-one (slurp "./src/2022/day7/input.txt")))
   ([input]
    (let [filesystem (-> input parse process)]
-     (filesystem-with-size filesystem))))
+     (->> (filesystem-with-size filesystem)
+          vals
+          (map (comp (partial reduce +) flatten))
+          (filter (partial >= 100000))
+          (reduce + 0)))))
+
+(defn part-two
+  ([] (part-two (slurp "./src/2022/day7/input.txt")))
+  ([input]
+   (let [filesystem-with-sz (-> input parse process filesystem-with-size)
+         total-used (apply max (->> filesystem-with-sz vals (map (comp (partial reduce +) flatten))))
+         unused-space (- 70000000 total-used)
+         needed-space (- 30000000 unused-space)]
+
+     (->> filesystem-with-sz
+          (reduce (fn [acc [path sizes]]
+                    (into acc [[path (apply + (flatten sizes))]]))
+                  {})
+          (map identity)
+          (sort-by second)
+          (drop-while (fn [[f s]]
+                        (<= s needed-space)))
+          (first)
+          (second)))))
 
 (comment
   (part-one example)
   (part-one)
   (part-two example)
   (part-two))
+
