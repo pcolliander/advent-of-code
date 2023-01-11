@@ -17,11 +17,11 @@ parse input = map (map toInt . filter (/= "") . splitOn "") $  words input
 visible :: Int -> [Int] -> Bool
 visible tree trees = all (==True) $ scanl (\acc tree' -> tree > tree') True trees
 
-score :: Int -> [Int] -> Int -> Int
-score tree [] result = result
-score tree (x:xs) result = if tree <= x
-                              then result + 1
-                              else score tree xs result + 1
+score :: Int -> [Int] -> Int
+score tree [] = 0
+score tree (x:xs)
+  | tree <= x = 1
+  | otherwise = 1 + score tree xs
 
 part1 :: String -> Int
 part1 input = length [tree | row <- [0..length rows - 1],
@@ -42,7 +42,7 @@ part2 input =  maximum [scenicScore | row <- [0..length rows - 1],
                       let treeLineV = transpose rows !! column,
                       let (before, after) = lineOfSight treeLineH column,
                       let (under, above) = lineOfSight treeLineV row,
-                      let scenicScore = score tree before 0 * score tree after 0 * score tree under 0 * score tree above 0]
+                      let scenicScore = score tree before * score tree after * score tree under * score tree above]
   where rows = parse input
 
 main = do  
