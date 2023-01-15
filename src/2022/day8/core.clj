@@ -47,13 +47,12 @@
           count))))
 
 (defn- score [tree view]
-  (count
-      (reduce (fn [acc n]
-                   (if (<= tree n)
-                     (reduced (conj acc n))
-                     (conj acc n)))
-              []
-              view)))
+  (reduce (fn [acc n]
+            (if (<= tree n)
+              (reduced (inc acc))
+              (inc acc)))
+          0
+          view))
 
 (defn part-two
   ([] (part-two (slurp "./src/2022/day8/input.txt")))
