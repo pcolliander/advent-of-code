@@ -24,14 +24,8 @@ score tree (x:xs)
   | tree <= x = 1
   | otherwise = 1 + score tree xs
 
-treeWithNeighbours :: [[Int]] -> Int -> Int -> [(Int, [[Int]])]
-treeWithNeighbours rows row column = [(tree, [after, before, under, above])]
-  where tree = (rows !! row) !! column
-        (before, after) = lineOfSight (rows !! row) column
-        (under, above) = lineOfSight (transpose rows !! column)  row
-
-treeWithNeighbours' :: [[Int]] -> Int -> Int -> (Int, [[Int]])
-treeWithNeighbours' rows row column = (tree, [after, before, under, above])
+treeWithNeighbours :: [[Int]] -> Int -> Int -> (Int, [[Int]])
+treeWithNeighbours rows row column = (tree, [after, before, under, above])
   where tree = (rows !! row) !! column
         (before, after) = lineOfSight (rows !! row) column
         (under, above) = lineOfSight (transpose rows !! column)  row
@@ -39,14 +33,14 @@ treeWithNeighbours' rows row column = (tree, [after, before, under, above])
 part1 :: String -> Int
 part1 input = length [tree | row    <- [0..length rows - 1],
                              column <- [0..length (head rows) - 1],
-                      let (tree, neighbours) = treeWithNeighbours' rows row column,
+                      let (tree, neighbours) = treeWithNeighbours rows row column,
                       any (visible tree) neighbours]
   where rows = parse input
 
 part2 :: String -> Int
 part2 input = maximum [scenicScore | row    <- [0..length rows - 1],
                                      column <- [0..length (head rows) - 1],
-                      let (tree, neighbours) = treeWithNeighbours' rows row column,
+                      let (tree, neighbours) = treeWithNeighbours rows row column,
                       let scenicScore = foldl (\acc n -> acc * score tree n) 1 neighbours]
   where rows = parse input
 
