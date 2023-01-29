@@ -2,6 +2,7 @@ import Data.List
 import Data.List.Split
 import qualified Data.Set as Set
 import Text.Regex.Posix
+import Control.Monad
 
 toInt :: String -> Int
 toInt = read
@@ -23,26 +24,25 @@ score tree (x:xs)
   | tree <= x = 1
   | otherwise = 1 + score tree xs
 
+treeWithNeighbours :: [[Int]] -> Int -> Int -> [(Int, [[Int]])]
+treeWithNeighbours rows row column = [(tree, [after, before, under, above])]
+  where tree = (rows !! row) !! column
+        (before, after) = lineOfSight (rows !! row) column
+        (under, above) = lineOfSight (transpose rows !! column)  row
+
 part1 :: String -> Int
-part1 input = length [tree | row <- [0..length rows - 1],
-                      column     <- [0..length (head rows) - 1],
-                      let tree = (rows !! row) !! column,
-                      let treeLineH = rows !! row,
-                      let treeLineV = transpose rows !! column,
-                      let (before, after) = lineOfSight treeLineH column,
-                      let (under, above) = lineOfSight treeLineV row,
-                      visible tree after || visible tree before || visible tree under || visible tree above]
+part1 input = length $ [0..length rows -1]
+  >>= \row -> [0..length (head rows) - 1]
+  >>= \column -> treeWithNeighbours rows row column
+  >>= (\(tree, neighbours) -> guard (foldl (\acc n -> acc || visible tree n) False neighbours) >> return tree)
   where rows = parse input
 
 part2 :: String -> Int
-part2 input =  maximum [scenicScore | row <- [0..length rows - 1],
-                        column            <- [0..length (head rows) - 1],
-                        let tree = (rows !! row) !! column,
-                        let treeLineH = rows !! row,
-                        let treeLineV = transpose rows !! column,
-                        let (before, after) = lineOfSight treeLineH column,
-                        let (under, above) = lineOfSight treeLineV row,
-                        let scenicScore = score tree before * score tree after * score tree under * score tree above]
+part2 input =  maximum $
+  [0..length rows -1]
+  >>= \row -> [0..length (head rows) - 1]
+  >>= \column -> treeWithNeighbours rows row column
+  >>= \(tree, neighbours) -> return $ foldl (\acc n -> acc * score tree n) 1 neighbours
   where rows = parse input
 
 main = do  
@@ -52,4 +52,3 @@ main = do
   print $ part1 input
   print $ part2 example
   print $ part2 input        
-
