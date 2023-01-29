@@ -41,7 +41,7 @@ part2 :: String -> Int
 part2 input = maximum [scenicScore | row    <- [0..length rows - 1],
                                      column <- [0..length (head rows) - 1],
                       let (tree, neighbours) = treeWithNeighbours rows row column,
-                      let scenicScore = foldl (\acc n -> acc * score tree n) 1 neighbours]
+                      let scenicScore = product $ map (score tree) neighbours]
   where rows = parse input
 
 main = do  
