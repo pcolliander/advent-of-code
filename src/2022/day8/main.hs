@@ -34,7 +34,7 @@ part1 :: String -> Int
 part1 input = length $ [0..length rows -1]
   >>= \row -> [0..length (head rows) - 1]
   >>= \column -> treeWithNeighbours rows row column
-  >>= (\(tree, neighbours) -> guard (foldl (\acc n -> acc || visible tree n) False neighbours) >> return tree)
+  >>= (\(tree, neighbours) -> guard (any (visible tree) neighbours)  >> return tree)
   where rows = parse input
 
 part2 :: String -> Int
