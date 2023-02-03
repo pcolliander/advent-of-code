@@ -53,8 +53,7 @@ U 20")
                                                        :U [(first head) (inc (second head))]
                                                        :D [(first head) (dec (second head))])
                                                tail' (if (adjacent? head' tail) tail head)]
-                                           [[head' (if (adjacent? head' tail ) tail head)]
-                                            (conj visited tail')]))
+                                           [[head' tail'] (conj visited tail')]))
                                        [knot #{}]
                                        (repeat quantity direction))]
            (recur knot' (apply conj tail-visited (vec visited)) (next motions)))
