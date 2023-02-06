@@ -29,25 +29,19 @@ addx -5")
             x 1
             execution [(first instructions)]
             instructions (next instructions)
-            signal-strength []]
+            signal-strength 0]
 
        (let [signal-strength' (if (some #{cycle-n} cycles)
-                                (conj signal-strength (* cycle-n x))
+                                (+ signal-strength (* cycle-n x))
                                 signal-strength)]
-         (if-let [to-execute (first execution)]
-           (let [x' (if (= :noop to-execute) x (+ x to-execute))]
-             (if-let [instruction (first instructions)]
+         (if-let [ex (first execution)]
+           (let [[instruction & instructions'] instructions]
                (recur (inc cycle-n)
-                      x'
-                      (conj (next execution) instruction)
-                      (next instructions)
-                      signal-strength')
-               (recur (inc cycle-n)
-                      x'
-                      (next execution)
-                      []
-                      signal-strength')))
-           (reduce + signal-strength)))))))
+                      (if (= :noop ex) x (+ x ex))
+                      (if instruction (conj (next execution) instruction) (next execution))
+                      instructions'
+                      signal-strength'))
+           signal-strength))))))
 
 (defn part-two
   ([] (part-two (slurp "./src/2022/day9/input.txt")))
