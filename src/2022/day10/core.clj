@@ -28,15 +28,14 @@ addx -5")
           x 1
           instructions (parse input)
           signal-strength 0]
-     (let [signal-strength' (if (some #{cycle-n} cycles)
-                              (+ signal-strength (* cycle-n x))
-                              signal-strength)]
-       (if-let [[ex & instructions'] instructions]
-           (recur (inc cycle-n)
-                  (if (= :noop ex) x (+ x ex))
-                  instructions'
-                  signal-strength')
-         signal-strength)))))
+     (if-let [ex (first instructions)]
+       (recur (inc cycle-n)
+              (if (= :noop ex) x (+ x ex))
+              (next instructions)
+              (if (some #{cycle-n} cycles)
+                (+ signal-strength (* cycle-n x))
+                signal-strength))
+       signal-strength))))
 
 (defn part-two
   ([] (part-two (slurp "./src/2022/day9/input.txt")))
