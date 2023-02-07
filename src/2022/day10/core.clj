@@ -24,24 +24,19 @@ addx -5")
 (defn part-one
   ([] (part-one (slurp "./src/2022/day10/input.txt")))
   ([input]
-   (let [instructions (parse input)]
-     (loop [cycle-n 1
-            x 1
-            execution [(first instructions)]
-            instructions (next instructions)
-            signal-strength 0]
-
-       (let [signal-strength' (if (some #{cycle-n} cycles)
-                                (+ signal-strength (* cycle-n x))
-                                signal-strength)]
-         (if-let [ex (first execution)]
-           (let [[instruction & instructions'] instructions]
-               (recur (inc cycle-n)
-                      (if (= :noop ex) x (+ x ex))
-                      (if instruction (conj (next execution) instruction) (next execution))
-                      instructions'
-                      signal-strength'))
-           signal-strength))))))
+   (loop [cycle-n 1
+          x 1
+          instructions (parse input)
+          signal-strength 0]
+     (let [signal-strength' (if (some #{cycle-n} cycles)
+                              (+ signal-strength (* cycle-n x))
+                              signal-strength)]
+       (if-let [[ex & instructions'] instructions]
+           (recur (inc cycle-n)
+                  (if (= :noop ex) x (+ x ex))
+                  instructions'
+                  signal-strength')
+         signal-strength)))))
 
 (defn part-two
   ([] (part-two (slurp "./src/2022/day9/input.txt")))
