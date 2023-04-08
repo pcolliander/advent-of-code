@@ -38,14 +38,31 @@ addx -5")
        signal-strength))))
 
 (defn part-two
-  ([] (part-two (slurp "./src/2022/day9/input.txt")))
+  ([] (part-two (slurp "./src/2022/day10/input.txt")))
   ([input]
-   (let [motions (parse input)])))
+   (let [pixels (loop [crt 0
+                       x 1
+                       instructions (parse input)
+                       pixels []]
+                  (if-let [ex (first instructions)]
+                    (let [visible? (some #{(mod crt 40)} [(dec x) x (inc x)]) ]
+                      (recur (inc crt)
+                             (if (= :noop ex) x (+ x ex))
+                             (next instructions)
+                             (conj pixels (if visible? "█" "░"))))
+                    pixels))
+         drawing (->> pixels (partition 40) (mapv #(mapv identity %))) ]
+
+     (dotimes [high 6]
+       (dotimes [wide 40]
+         (print (get-in drawing [high wide])))
+       (println)))))
 
 (comment
   (part-one example)
   (part-one (slurp "./src/2022/day10/large-example.txt"))
   (part-one)
   (part-two example)
-  (part-two large-example)
+  (part-two (slurp "./src/2022/day10/large-example.txt"))
   (part-two))
+
