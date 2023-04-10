@@ -65,22 +65,23 @@ Monkey 3:
       "+" (+ (parse-long operand) (parse-long operand-2)))))
 
 (defn- round [turns]
-  (->> (keys turns)
-       (reduce 
-         (fn [state n]
-           (let [{:keys [items operation if-true if-false condition inspected]} (get state n)
-                 items (map (comp #(quot % 3) (partial apply-operation operation)) items)
-                 inspected-count ((fnil + 0) inspected (count items))]
-                            
-             (->> items
-                  (reduce (fn [state' item]
-                            (cond-> state'
-                              true (assoc-in [n :items] [])
-                              true (assoc-in [n :inspected] inspected-count)
-                              (zero? (mod item (parse-long condition))) (update-in [if-true :items] #(conj % item))
-                              (pos?  (mod item (parse-long condition))) (update-in [if-false :items] #(conj % item))))
-                          state))))
-         turns)))
+  (loop [state turns
+         monkey-numbers (keys turns)]
+    (if-let [n (first monkey-numbers)]
+      (let [{:keys [items operation if-true if-false condition inspected]} (get state n)
+            items (map (comp #(quot % 3) (partial apply-operation operation)) items)
+            inspected-count ((fnil + 0) inspected (count items))
+            state' (reduce (fn [state' item]
+                             (let [divisible? (zero? (mod item (parse-long condition)))]
+                               (cond-> state'
+                                 true (assoc-in [n :items] [])
+                                 true (assoc-in [n :inspected] inspected-count)
+                                 divisible?       (update-in [if-true :items] #(conj % item))
+                                 (not divisible?) (update-in [if-false :items] #(conj % item)))))
+                           state
+                           items)]
+        (recur state' (next monkey-numbers)))
+      state)))
 
 
 (defn part-one
