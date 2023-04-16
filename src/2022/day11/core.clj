@@ -64,47 +64,42 @@ Monkey 3:
       "*" (* (parse-long operand) (parse-long operand-2))
       "+" (+ (parse-long operand) (parse-long operand-2)))))
 
-(defn- round [turns]
+(defn- round [[turns relieve-stress]]
   (loop [state turns
          monkey-numbers (keys turns)]
     (if-let [n (first monkey-numbers)]
       (let [{:keys [items operation if-true if-false condition inspected]} (get state n)
-            items (map (comp #(quot % 3) (partial apply-operation operation)) items)
-            inspected-count ((fnil + 0) inspected (count items))
+            items (map (comp relieve-stress (partial apply-operation operation)) items)
             state' (reduce (fn [state' item]
                              (let [divisible? (zero? (mod item (parse-long condition)))]
                                (cond-> state'
-                                 true (assoc-in [n :items] [])
-                                 true (assoc-in [n :inspected] inspected-count)
+                                 true (assoc-in   [n :items] [])
+                                 true (update-in  [n :inspected] (fnil inc 0))
                                  divisible?       (update-in [if-true :items] #(conj % item))
                                  (not divisible?) (update-in [if-false :items] #(conj % item)))))
                            state
                            items)]
         (recur state' (next monkey-numbers)))
-      state)))
-
+      [state relieve-stress])))
 
 (defn part-one
   ([] (part-one (slurp "./src/2022/day11/input.txt")))
   ([input]
    (let [state (parse input)
-         state' (loop [n 20
-                       state state]
-                  (if (pos? n)
-                    (recur (dec n) (round state))
-                    state))]
+         [state' _] (nth (iterate round [state #(quot % 3)]) 20)] 
      (apply * (take 2 (sort > (map :inspected (vals state'))))))))
 
 (defn part-two
   ([] (part-two (slurp "./src/2022/day11/input.txt")))
   ([input]
-   ()))
-
-(parse example)
+    (let [state (parse input)
+          [state' _] (nth (iterate round [state #(mod % (* 1 2 3 5 7 11 13 17 19 23))]) 10000)]
+     (apply *  (take 2 (sort > (map :inspected (vals state'))))))))
 
 (comment
   (part-one example)
   (part-one)
   (part-two example)
   (part-two))
+
 
