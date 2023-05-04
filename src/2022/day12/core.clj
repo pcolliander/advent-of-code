@@ -29,28 +29,21 @@ abdefghi
                :when (= value (square area [x y]))]
            [x y])))
 
-(def visited {}
-
-(defn walk [area path]
-  (let [position (last path)
-        [x y] position
-        current-square (square area position)
+(defn walk [area visited [x y]]
+  (let [current-square (square area [x y])
         right [(inc x) y]
         left [(dec x) y]
         up [x (inc y)]
         down [x (dec y)]
         new-paths (->> [right left up down]
-                       (remove #(get (set path) %))
+                       (remove @visited)
                        (filter (partial square area)))]
-
-    ;; (tap> [:new-paths new-paths])
 
     (->> new-paths
          (keep (fn [coords]
                  (when (at-most-one-higher? current-square (square area coords))
-                   coords)))
-         (map (fn [chord]
-                (conj path chord))))))
+                   (swap! visited conj coords)
+                   coords))))))
 
 (defn part-one
   ([] (part-one (slurp "./src/2022/day12/input.txt")))
@@ -60,20 +53,19 @@ abdefghi
          end (find-square area \E)
          area' (-> area
                    (assoc-in (reverse start) \a)
-                   (assoc-in (reverse end)   \z))]
+                   (assoc-in (reverse end)   \z))
+         visited (atom #{})]
 
      (loop [steps 0
-            paths [[start]]]
+            nodes [start]]
 
-       (if (some #(when (= (square area (last %)) \E) %) paths)
+       ;; (tap> visited)
+
+       (if (some #(when (= (square area %) \E) %) nodes)
          [:DONE steps]
-         (if (< steps 50)
-           (recur (inc steps)
-                  (mapcat #(walk area' %) paths))
-           [:nope])))
-     )))
-
+         (recur (inc steps)
+                (mapcat #(walk area' visited %) nodes)))))))
 
 (comment
 (part-one example)
-(part-one ))
+(part-one))
