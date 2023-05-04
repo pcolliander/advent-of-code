@@ -36,13 +36,12 @@ abdefghi
         up [x (inc y)]
         down [x (dec y)]
         new-paths (->> [right left up down]
-                       (remove @visited)
+                       (remove visited)
                        (filter (partial square area)))]
 
     (->> new-paths
          (keep (fn [coords]
                  (when (at-most-one-higher? current-square (square area coords))
-                   (swap! visited conj coords)
                    coords))))))
 
 (defn part-one
@@ -53,18 +52,23 @@ abdefghi
          end (find-square area \E)
          area' (-> area
                    (assoc-in (reverse start) \a)
-                   (assoc-in (reverse end)   \z))
-         visited (atom #{})]
+                   (assoc-in (reverse end)   \z))]
 
      (loop [steps 0
+            visited #{}
             nodes [start]]
-
-       ;; (tap> visited)
 
        (if (some #(when (= (square area %) \E) %) nodes)
          [:DONE steps]
+         (let [[visited' nodes'] (reduce (fn [[visited nodes] node]
+                                               (let [nodes' (walk area' visited node)]
+                                                 [(into visited nodes')
+                                                  (concat nodes nodes')]))
+                                             [visited []]
+                                             nodes)]
          (recur (inc steps)
-                (mapcat #(walk area' visited %) nodes)))))))
+                visited'
+                nodes')))))))
 
 (comment
 (part-one example)
