@@ -30,10 +30,7 @@ abdefghi
     [x y]))
 
 (defn- find-square [area value]
-  (first (for [x (range 0 (-> area first count))
-               y (range 0 (count area))
-               :when (= value (square area [x y]))]
-           [x y])))
+  (first (find-squares area value)))
 
 (defn walk [area visited [x y]]
   (let [current-square (square area [x y])
