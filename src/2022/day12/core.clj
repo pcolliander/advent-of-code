@@ -38,11 +38,10 @@ abdefghi
         new-paths (->> [right left up down]
                        (remove visited)
                        (filter (partial square area)))]
-
-    (->> new-paths
-         (keep (fn [coords]
-                 (when (at-most-one-higher? current-square (square area coords))
-                   coords))))))
+    (keep (fn [coords]
+            (when (at-most-one-higher? current-square (square area coords))
+              coords))
+          new-paths)))
 
 (defn part-one
   ([] (part-one (slurp "./src/2022/day12/input.txt")))
@@ -58,7 +57,7 @@ abdefghi
             visited #{}
             nodes [start]]
 
-       (if (some #(when (= (square area %) \E) %) nodes)
+       (if (some #(= (square area %) \E) nodes)
          [:DONE steps]
          (let [[visited' nodes'] (reduce (fn [[visited nodes] node]
                                                (let [nodes' (walk area' visited node)]
