@@ -23,6 +23,12 @@ abdefghi
 (defn- square [area [x y]]
   (nth (nth area y nil) x nil))
 
+(defn- find-squares [area value]
+  (for [x (range 0 (-> area first count))
+        y (range 0 (count area))
+        :when (= value (square area [x y]))]
+    [x y]))
+
 (defn- find-square [area value]
   (first (for [x (range 0 (-> area first count))
                y (range 0 (count area))
@@ -43,6 +49,24 @@ abdefghi
               coords))
           new-paths)))
 
+(defn- find-path [target area start highscore]
+  (loop [steps 0
+         visited #{}
+         nodes [start]]
+
+    (when (< steps highscore)
+      (if (some #(= % target) nodes)
+        steps
+        (let [[visited' nodes'] (reduce (fn [[visited nodes] node]
+                                          (let [nodes' (walk area visited node)]
+                                            [(into visited nodes')
+                                             (concat nodes nodes')]))
+                                        [visited []]
+                                        nodes)]
+          (recur (inc steps)
+                 visited'
+                 nodes'))))))
+
 (defn part-one
   ([] (part-one (slurp "./src/2022/day12/input.txt")))
   ([input]
@@ -52,23 +76,28 @@ abdefghi
          area' (-> area
                    (assoc-in (reverse start) \a)
                    (assoc-in (reverse end)   \z))]
+     (find-path end area' start (Integer/MAX_VALUE)))))
 
-     (loop [steps 0
-            visited #{}
-            nodes [start]]
+(defn part-two
+  ([] (part-two (slurp "./src/2022/day12/input.txt")))
+  ([input]
+   (let [area (parse input)
+         end (find-square area \E)
+         area' (-> area
+                   (assoc-in (reverse (find-square area \S)) \a)
+                   (assoc-in (reverse end)   \z))
+         
+         starting-nodes (find-squares area' \a)]
 
-       (if (some #(= (square area %) \E) nodes)
-         [:DONE steps]
-         (let [[visited' nodes'] (reduce (fn [[visited nodes] node]
-                                               (let [nodes' (walk area' visited node)]
-                                                 [(into visited nodes')
-                                                  (concat nodes nodes')]))
-                                             [visited []]
-                                             nodes)]
-         (recur (inc steps)
-                visited'
-                nodes')))))))
+     (reduce (fn [highscore n]
+               (if-let [score (find-path end area' n highscore)]
+                 (min highscore score)
+                 highscore))
+             (Integer/MAX_VALUE)
+             starting-nodes))))
 
 (comment
 (part-one example)
-(part-one))
+(part-one)
+(part-two example)
+(part-two))
